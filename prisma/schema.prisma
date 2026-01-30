@@ -1,0 +1,112 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Restaurant {
+  id        String   @id @default(cuid())
+  name      String
+  brand     String?
+  phone     String?
+  timezone  String   @default("Asia/Hebron")
+  externalId String? @unique
+  createdAt DateTime @default(now())
+  
+  calls     Call[]
+  orders    Order[]
+  
+  @@index([externalId])
+}
+
+enum CallOutcome {
+  ORDER_PLACED
+  INQUIRY
+  MISSED
+  CANCELED
+  OTHER
+}
+
+model Call {
+  id              String      @id @default(cuid())
+  restaurantId    String
+  startedAt       DateTime
+  endedAt         DateTime
+  durationSeconds Int
+  callerPhone     String
+  callerName      String?
+  transcriptText  String      @db.LongText
+  summaryText     String?     @db.LongText
+  outcome         CallOutcome
+  recordingUrl    String?
+  isRecorded      Boolean     @default(false)
+  externalId      String?     @unique
+  createdAt       DateTime    @default(now())
+  
+  restaurant      Restaurant  @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  orders          Order[]
+  
+  @@index([restaurantId, startedAt])
+  @@index([externalId])
+}
+
+enum OrderType {
+  PICKUP
+  DELIVERY
+}
+
+enum PaymentMethod {
+  CASH
+  CARD
+  ONLINE
+  OTHER
+  UNKNOWN
+}
+
+enum OrderStatus {
+  PLACED
+  CANCELED
+  FAILED
+  NEEDS_FOLLOWUP
+}
+
+model Order {
+  id            String        @id @default(cuid())
+  callId        String?
+  restaurantId  String
+  orderType     OrderType
+  paymentMethod PaymentMethod
+  subtotal      Decimal       @db.Decimal(10, 2)
+  tax           Decimal       @db.Decimal(10, 2)
+  tip           Decimal       @db.Decimal(10, 2)
+  total         Decimal       @db.Decimal(10, 2)
+  status        OrderStatus
+  customerName  String?
+  customerPhone String?
+  externalId    String?       @unique
+  createdAt     DateTime      @default(now())
+  
+  call          Call?         @relation(fields: [callId], references: [id], onDelete: SetNull)
+  restaurant    Restaurant    @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  items         OrderItem[]
+  
+  @@index([restaurantId, createdAt])
+  @@index([callId])
+  @@index([externalId])
+}
+
+model OrderItem {
+  id            String  @id @default(cuid())
+  orderId       String
+  itemName      String
+  quantity      Int
+  unitPrice     Decimal? @db.Decimal(10, 2)
+  modifiersJson Json?
+  
+  order         Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  @@index([orderId])
+}
