@@ -106,15 +106,6 @@ export function OverviewContent() {
   return (
     <div className="space-y-3">
       <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-3 shadow-xl border-0">
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-          Overview
-        </h1>
-        <p className="text-gray-600 mt-0.5 text-sm">
-          Restaurant analytics and insights
-        </p>
-      </div>
-
-      <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-3 shadow-xl border-0">
         <h3 className="text-xs font-semibold text-gray-700 mb-3 uppercase tracking-wide">Filters</h3>
         <div className="flex flex-wrap gap-4">
           <DateRangePicker date={dateRange} onDateChange={setDateRange} />

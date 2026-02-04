@@ -2,17 +2,19 @@
 
 import { useEffect, useState } from "react"
 import { format } from "date-fns"
-import { Store, Phone, ShoppingCart, DollarSign, TrendingUp } from "lucide-react"
+import { Store, Phone, ShoppingCart, DollarSign, TrendingUp, Plus, Edit, Trash2 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
 
 interface RestaurantStats {
   id: string
@@ -29,6 +31,11 @@ interface RestaurantStats {
 export default function RestaurantsPage() {
   const [restaurants, setRestaurants] = useState<RestaurantStats[]>([])
   const [loading, setLoading] = useState(true)
+  const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [isEditOpen, setIsEditOpen] = useState(false)
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+  const [selectedRestaurant, setSelectedRestaurant] = useState<RestaurantStats | null>(null)
+  const [formData, setFormData] = useState({ name: "", brand: "" })
 
   useEffect(() => {
     fetchRestaurants()
@@ -47,15 +54,89 @@ export default function RestaurantsPage() {
     }
   }
 
+  const handleCreate = async () => {
+    try {
+      const res = await fetch("/api/restaurants", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      })
+      if (res.ok) {
+        setIsCreateOpen(false)
+        setFormData({ name: "", brand: "" })
+        fetchRestaurants()
+      }
+    } catch (error) {
+      console.error("Failed to create restaurant:", error)
+    }
+  }
+
+  const handleEdit = async () => {
+    if (!selectedRestaurant) return
+    try {
+      const res = await fetch(`/api/restaurants/${selectedRestaurant.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      })
+      if (res.ok) {
+        setIsEditOpen(false)
+        setSelectedRestaurant(null)
+        setFormData({ name: "", brand: "" })
+        fetchRestaurants()
+      }
+    } catch (error) {
+      console.error("Failed to update restaurant:", error)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!selectedRestaurant) return
+    try {
+      const res = await fetch(`/api/restaurants/${selectedRestaurant.id}`, {
+        method: "DELETE",
+      })
+      if (res.ok) {
+        setIsDeleteOpen(false)
+        setSelectedRestaurant(null)
+        fetchRestaurants()
+      }
+    } catch (error) {
+      console.error("Failed to delete restaurant:", error)
+    }
+  }
+
+  const openEditDialog = (restaurant: RestaurantStats) => {
+    setSelectedRestaurant(restaurant)
+    setFormData({ name: restaurant.name, brand: restaurant.brand || "" })
+    setIsEditOpen(true)
+  }
+
+  const openDeleteDialog = (restaurant: RestaurantStats) => {
+    setSelectedRestaurant(restaurant)
+    setIsDeleteOpen(true)
+  }
+
   return (
     <div className="space-y-3">
       <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-3 shadow-xl border-0">
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-          Restaurants
-        </h1>
-        <p className="text-gray-600 mt-0.5 text-sm">
-          Performance metrics by restaurant
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              Restaurants
+            </h1>
+            <p className="text-gray-600 mt-0.5 text-sm">
+              Performance metrics by restaurant
+            </p>
+          </div>
+          <Button
+            onClick={() => setIsCreateOpen(true)}
+            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Restaurant
+          </Button>
+        </div>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -111,85 +192,240 @@ export default function RestaurantsPage() {
         </Card>
       </div>
 
-      <Card className="border-0 shadow-xl bg-white/95 backdrop-blur-sm">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-bold text-gray-800">Restaurant Performance</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-xl border-0 overflow-hidden">
-            <Table>
-              <TableHeader className="bg-gradient-to-r from-indigo-50 to-purple-50">
-                <TableRow className="border-b-2 border-purple-200">
-                  <TableHead className="text-gray-700 font-semibold">Restaurant</TableHead>
-                  <TableHead className="text-gray-700 font-semibold">Brand</TableHead>
-                  <TableHead className="text-gray-700 font-semibold">Total Calls</TableHead>
-                  <TableHead className="text-gray-700 font-semibold">Total Orders</TableHead>
-                  <TableHead className="text-gray-700 font-semibold">Sales</TableHead>
-                  <TableHead className="text-gray-700 font-semibold">Avg Ticket</TableHead>
-                  <TableHead className="text-gray-700 font-semibold">Conversion Rate</TableHead>
-                  <TableHead className="text-gray-700 font-semibold">Last Call</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
-                      Loading restaurants...
-                    </TableCell>
-                  </TableRow>
-                ) : restaurants.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
-                      No restaurants found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  restaurants.map((restaurant) => (
-                    <TableRow key={restaurant.id} className="cursor-pointer hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 transition-all duration-200">
-                      <TableCell className="font-medium text-gray-800">{restaurant.name}</TableCell>
-                      <TableCell>
-                        {restaurant.brand ? (
-                          <Badge variant="outline" className="text-gray-700">{restaurant.brand}</Badge>
-                        ) : (
-                          <span className="text-gray-500">-</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-gray-700">
-                        <div className="flex items-center gap-1">
-                          <Phone className="h-4 w-4 text-gray-500" />
-                          {restaurant.totalCalls}
+      <div className="space-y-4">
+        {loading ? (
+          <Card className="border-0 shadow-xl bg-white/95 backdrop-blur-sm">
+            <CardContent className="p-8 text-center text-gray-600">
+              Loading restaurants...
+            </CardContent>
+          </Card>
+        ) : restaurants.length === 0 ? (
+          <Card className="border-0 shadow-xl bg-white/95 backdrop-blur-sm">
+            <CardContent className="p-8 text-center text-gray-600">
+              No restaurants found
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {restaurants.map((restaurant) => (
+              <Card
+                key={restaurant.id}
+                className="group border-0 shadow-lg bg-white/95 backdrop-blur-sm hover:shadow-2xl hover:shadow-indigo-500/20 hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+              >
+                <CardContent className="p-5">
+                  {/* Header with Restaurant Name */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500">
+                        <Store className="h-5 w-5 text-white" />
+                      </div>
+                      <h3 className="font-bold text-gray-900 text-lg">
+                        {restaurant.name}
+                      </h3>
+                    </div>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          openEditDialog(restaurant)
+                        }}
+                        className="hover:bg-indigo-100"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          openDeleteDialog(restaurant)
+                        }}
+                        className="hover:bg-red-100 hover:text-red-600"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                  {restaurant.brand && (
+                    <Badge variant="secondary" className="text-xs bg-slate-200 text-slate-800 font-medium">
+                      {restaurant.brand}
+                    </Badge>
+                  )}
+                  {/* Stats Grid */}
+                  <div className="space-y-3">
+                    {/* Calls and Orders */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Phone className="h-4 w-4 text-purple-600" />
+                          <span className="text-xs text-gray-600 font-medium">Calls</span>
                         </div>
-                      </TableCell>
-                      <TableCell className="text-gray-700">
-                        <div className="flex items-center gap-1">
-                          <ShoppingCart className="h-4 w-4 text-gray-500" />
-                          {restaurant.totalOrders}
+                        <p className="text-xl font-bold text-gray-900">{restaurant.totalCalls}</p>
+                      </div>
+                      <div className="p-3 bg-gradient-to-r from-orange-50 to-red-50 rounded-lg">
+                        <div className="flex items-center gap-2 mb-1">
+                          <ShoppingCart className="h-4 w-4 text-orange-600" />
+                          <span className="text-xs text-gray-600 font-medium">Orders</span>
                         </div>
-                      </TableCell>
-                      <TableCell className="font-semibold text-gray-800">
+                        <p className="text-xl font-bold text-gray-900">{restaurant.totalOrders}</p>
+                      </div>
+                    </div>
+
+                    {/* Sales */}
+                    <div className="p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg">
+                      <div className="flex items-center gap-2 mb-1">
+                        <DollarSign className="h-4 w-4 text-green-600" />
+                        <span className="text-xs text-gray-600 font-medium">Total Sales</span>
+                      </div>
+                      <p className="text-2xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
                         ${restaurant.sales.toFixed(2)}
-                      </TableCell>
-                      <TableCell className="text-gray-700">
-                        ${restaurant.avgTicket.toFixed(2)}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={restaurant.conversionRate >= 50 ? "default" : "secondary"} className="text-gray-700">
-                          {restaurant.conversionRate.toFixed(1)}%
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-sm text-gray-700">
-                        {restaurant.lastCall
-                          ? format(new Date(restaurant.lastCall), "MMM dd, HH:mm")
-                          : "-"}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
+                      </p>
+                    </div>
+
+                    {/* Avg Ticket and Conversion Rate */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="p-3 bg-slate-100 rounded-lg">
+                        <p className="text-xs text-gray-600 font-medium mb-1">Avg Ticket</p>
+                        <p className="text-lg font-bold text-gray-900">${restaurant.avgTicket.toFixed(2)}</p>
+                      </div>
+                      <div className="p-3 bg-indigo-50 rounded-lg">
+                        <p className="text-xs text-gray-600 font-medium mb-1">Conversion</p>
+                        <div className="flex items-center gap-2">
+                          <TrendingUp className="h-4 w-4 text-indigo-600" />
+                          <p className="text-lg font-bold text-indigo-600">{restaurant.conversionRate.toFixed(1)}%</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Last Call */}
+                    {restaurant.lastCall && (
+                      <div className="pt-3 border-t border-gray-100">
+                        <p className="text-xs text-gray-500">
+                          Last call: {format(new Date(restaurant.lastCall), "MMM dd, yyyy • HH:mm")}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
-        </CardContent>
-      </Card>
+        )}
+      </div>
+
+      {/* Create Restaurant Dialog */}
+      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+        <DialogContent className="bg-white">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              Add New Restaurant
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Restaurant Name</Label>
+              <Input
+                id="name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="Enter restaurant name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="brand">Brand (Optional)</Label>
+              <Input
+                id="brand"
+                value={formData.brand}
+                onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                placeholder="Enter brand name"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCreateOpen(false)} className="text-gray-700 hover:text-gray-900">
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreate}
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+            >
+              Create Restaurant
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Restaurant Dialog */}
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent className="bg-white">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              Edit Restaurant
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">Restaurant Name</Label>
+              <Input
+                id="edit-name"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="Enter restaurant name"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-brand">Brand (Optional)</Label>
+              <Input
+                id="edit-brand"
+                value={formData.brand}
+                onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                placeholder="Enter brand name"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditOpen(false)} className="text-gray-700 hover:text-gray-900">
+              Cancel
+            </Button>
+            <Button
+              onClick={handleEdit}
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+            >
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+        <DialogContent className="bg-white">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-red-600">
+              Delete Restaurant
+            </DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-gray-700">
+              Are you sure you want to delete <span className="font-bold">{selectedRestaurant?.name}</span>? 
+              This action cannot be undone and will remove all associated data.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleteOpen(false)} className="text-gray-700 hover:text-gray-900">
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDelete}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Delete Restaurant
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

@@ -60,3 +60,55 @@ export async function GET(request: NextRequest) {
     )
   }
 }
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { 
+      restaurantId, 
+      callerPhone, 
+      callerName, 
+      durationSeconds,
+      outcome,
+      transcriptText,
+      summaryText 
+    } = body
+
+    if (!restaurantId || !callerPhone || !outcome) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      )
+    }
+
+    const now = new Date()
+    const startedAt = new Date(now.getTime() - (durationSeconds || 0) * 1000)
+
+    const call = await prisma.call.create({
+      data: {
+        restaurantId,
+        startedAt,
+        endedAt: now,
+        durationSeconds: durationSeconds || 0,
+        callerPhone,
+        callerName: callerName || null,
+        outcome,
+        isRecorded: false,
+        recordingUrl: null,
+        transcriptText: transcriptText || '',
+        summaryText: summaryText || null,
+      },
+      include: {
+        restaurant: true,
+      },
+    })
+
+    return NextResponse.json(call, { status: 201 })
+  } catch (error) {
+    console.error('Error creating call:', error)
+    return NextResponse.json(
+      { error: 'Failed to create call' },
+      { status: 500 }
+    )
+  }
+}

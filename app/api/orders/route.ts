@@ -62,3 +62,60 @@ export async function GET(request: NextRequest) {
     )
   }
 }
+
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json()
+    const { 
+      restaurantId, 
+      orderType, 
+      paymentMethod, 
+      total, 
+      customerName, 
+      customerPhone,
+      items 
+    } = body
+
+    if (!restaurantId || !orderType || !paymentMethod || !total) {
+      return NextResponse.json(
+        { error: 'Missing required fields' },
+        { status: 400 }
+      )
+    }
+
+    const order = await prisma.order.create({
+      data: {
+        restaurantId,
+        orderType,
+        paymentMethod,
+        total: parseFloat(total),
+        subtotal: parseFloat(total),
+        tax: 0,
+        tip: 0,
+        status: 'PLACED',
+        customerName: customerName || null,
+        customerPhone: customerPhone || null,
+        items: items ? {
+          create: items.map((item: any) => ({
+            itemName: item.itemName,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice ? parseFloat(item.unitPrice) : null,
+            modifiersJson: item.modifiersJson || {},
+          })),
+        } : undefined,
+      },
+      include: {
+        restaurant: true,
+        items: true,
+      },
+    })
+
+    return NextResponse.json(order, { status: 201 })
+  } catch (error) {
+    console.error('Error creating order:', error)
+    return NextResponse.json(
+      { error: 'Failed to create order' },
+      { status: 500 }
+    )
+  }
+}

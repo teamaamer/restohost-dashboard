@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react"
 import { format } from "date-fns"
-import { Eye, Phone, Clock, Search, ShoppingCart } from "lucide-react"
+import { Eye, Phone, Clock, Search, ShoppingCart, Plus, Edit, Trash2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Table,
   TableBody,
@@ -19,6 +21,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
@@ -49,10 +52,35 @@ export default function CallsPage() {
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [isCreateOpen, setIsCreateOpen] = useState(false)
+  const [isEditOpen, setIsEditOpen] = useState(false)
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
+  const [restaurants, setRestaurants] = useState<any[]>([])
+  const [formData, setFormData] = useState<any>({
+    restaurantId: "",
+    callerPhone: "",
+    callerName: "",
+    durationSeconds: "0",
+    outcome: "OTHER",
+    transcriptText: "",
+    summaryText: "",
+    audioFile: null,
+  })
 
   useEffect(() => {
     fetchCalls()
+    fetchRestaurants()
   }, [page])
+
+  const fetchRestaurants = async () => {
+    try {
+      const res = await fetch("/api/restaurants")
+      const data = await res.json()
+      setRestaurants(data)
+    } catch (error) {
+      console.error("Failed to fetch restaurants:", error)
+    }
+  }
 
   const fetchCalls = async () => {
     setLoading(true)
@@ -85,6 +113,87 @@ export default function CallsPage() {
     return <Badge variant={variants[outcome] || "outline"}>{outcome.replace("_", " ")}</Badge>
   }
 
+  const handleCreate = async () => {
+    try {
+      const res = await fetch("/api/calls", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          durationSeconds: parseInt(formData.durationSeconds) || 0,
+        }),
+      })
+      if (res.ok) {
+        setIsCreateOpen(false)
+        setFormData({
+          restaurantId: "",
+          callerPhone: "",
+          callerName: "",
+          durationSeconds: "0",
+          outcome: "OTHER",
+          transcriptText: "",
+          summaryText: "",
+        })
+        fetchCalls()
+      }
+    } catch (error) {
+      console.error("Failed to create call:", error)
+    }
+  }
+
+  const handleEdit = async () => {
+    if (!selectedCall) return
+    try {
+      const res = await fetch(`/api/calls/${selectedCall.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      })
+      if (res.ok) {
+        setIsEditOpen(false)
+        setSelectedCall(null)
+        fetchCalls()
+      }
+    } catch (error) {
+      console.error("Failed to update call:", error)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!selectedCall) return
+    try {
+      const res = await fetch(`/api/calls/${selectedCall.id}`, {
+        method: "DELETE",
+      })
+      if (res.ok) {
+        setIsDeleteOpen(false)
+        setSelectedCall(null)
+        fetchCalls()
+      }
+    } catch (error) {
+      console.error("Failed to delete call:", error)
+    }
+  }
+
+  const openEditDialog = (call: Call) => {
+    setSelectedCall(call)
+    setFormData({
+      restaurantId: "",
+      callerPhone: call.callerPhone,
+      callerName: call.callerName || "",
+      durationSeconds: call.durationSeconds.toString(),
+      outcome: call.outcome,
+      transcriptText: call.transcriptText,
+      summaryText: call.summaryText || "",
+    })
+    setIsEditOpen(true)
+  }
+
+  const openDeleteDialog = (call: Call) => {
+    setSelectedCall(call)
+    setIsDeleteOpen(true)
+  }
+
   const filteredTranscript = selectedCall?.transcriptText
     .split("\n")
     .filter((line) =>
@@ -94,126 +203,171 @@ export default function CallsPage() {
   return (
     <div className="space-y-3">
       <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-3 shadow-xl border-0">
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-          Calls
-        </h1>
-        <p className="text-gray-600 mt-0.5 text-sm">
-          View call transcripts and recordings
-        </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              Calls
+            </h1>
+            <p className="text-gray-600 mt-0.5 text-sm">
+              View call transcripts and recordings
+            </p>
+          </div>
+          <Button
+            onClick={() => setIsCreateOpen(true)}
+            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+          >
+            <Plus className="h-4 w-4 mr-2" />
+            Add Call
+          </Button>
+        </div>
       </div>
 
-      <Card className="border-0 shadow-xl bg-white/95 backdrop-blur-sm">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-lg font-bold text-gray-800">All Calls</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-xl border-0 overflow-hidden">
-            <Table>
-              <TableHeader className="bg-gradient-to-r from-indigo-50 to-purple-50">
-                <TableRow className="border-b-2 border-purple-200">
-                  <TableHead className="text-gray-700 font-semibold">Start Time</TableHead>
-                  <TableHead className="text-gray-700 font-semibold">Restaurant</TableHead>
-                  <TableHead className="text-gray-700 font-semibold">Caller</TableHead>
-                  <TableHead className="text-gray-700 font-semibold">Duration</TableHead>
-                  <TableHead className="text-gray-700 font-semibold">Outcome</TableHead>
-                  <TableHead className="text-gray-700 font-semibold">Recorded</TableHead>
-                  <TableHead className="text-gray-700 font-semibold">Orders</TableHead>
-                  <TableHead className="text-gray-700 font-semibold">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
-                      Loading calls...
-                    </TableCell>
-                  </TableRow>
-                ) : calls.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="text-center py-8">
-                      No calls found
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  calls.map((call) => (
-                    <TableRow key={call.id} className="hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 transition-all duration-200">
-                      <TableCell className="text-gray-700">
-                        {format(new Date(call.startedAt), "MMM dd, HH:mm")}
-                      </TableCell>
-                      <TableCell className="font-medium text-gray-800">
-                        {call.restaurant.name}
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <p className="font-medium text-gray-800">{call.callerName || "Unknown"}</p>
-                          <p className="text-xs text-gray-600">{call.callerPhone}</p>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-gray-700">
-                        {Math.floor(call.durationSeconds / 60)}:{String(call.durationSeconds % 60).padStart(2, '0')}
-                      </TableCell>
-                      <TableCell className="text-gray-700">
-                        <div className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {formatDuration(call.durationSeconds)}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-gray-700">{getOutcomeBadge(call.outcome)}</TableCell>
-                      <TableCell className="text-gray-700">
-                        {call.isRecorded ? (
-                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                            Yes
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-gray-700">No</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-gray-700">
-                        {call.orders.length > 0 ? call.orders.length : "-"}
-                      </TableCell>
-                      <TableCell>
+      <div className="space-y-4">
+        {loading ? (
+          <Card className="border-0 shadow-xl bg-white/95 backdrop-blur-sm">
+            <CardContent className="p-8 text-center text-gray-600">
+              Loading calls...
+            </CardContent>
+          </Card>
+        ) : calls.length === 0 ? (
+          <Card className="border-0 shadow-xl bg-white/95 backdrop-blur-sm">
+            <CardContent className="p-8 text-center text-gray-600">
+              No calls found
+            </CardContent>
+          </Card>
+        ) : (
+          <>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {calls.map((call) => (
+                <Card
+                  key={call.id}
+                  className="group border-0 shadow-lg bg-white/95 backdrop-blur-sm hover:shadow-2xl hover:shadow-indigo-500/20 hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+                  onClick={() => setSelectedCall(call)}
+                >
+                  <CardContent className="p-5">
+                    {/* Header with Restaurant and Time */}
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-gray-900 truncate text-lg">
+                          {call.restaurant.name}
+                        </h3>
+                        <p className="text-sm text-gray-500 mt-0.5">
+                          {format(new Date(call.startedAt), "MMM dd, yyyy • HH:mm")}
+                        </p>
+                      </div>
+                      <div className="flex gap-1">
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => setSelectedCall(call)}
+                          className="flex-shrink-0 hover:bg-indigo-100"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSelectedCall(call)
+                          }}
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            openEditDialog(call)
+                          }}
+                          className="hover:bg-indigo-100"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            openDeleteDialog(call)
+                          }}
+                          className="hover:bg-red-100 hover:text-red-600"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
 
-          <div className="flex items-center justify-between mt-6 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl">
-            <p className="text-sm font-semibold text-gray-700">
-              Page {page} of {totalPages}
-            </p>
-            <div className="flex gap-3">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="bg-white hover:bg-gradient-to-r hover:from-indigo-600 hover:to-purple-600 hover:text-white border-purple-200"
-              >
-                Previous
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={page === totalPages}
-                className="bg-white hover:bg-gradient-to-r hover:from-indigo-600 hover:to-purple-600 hover:text-white border-purple-200"
-              >
-                Next
-              </Button>
+                    {/* Caller Info */}
+                    <div className="mb-4 p-3 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg">
+                      <div className="flex items-center gap-2 mb-1">
+                        <Phone className="h-4 w-4 text-indigo-600" />
+                        <span className="font-semibold text-gray-900">
+                          {call.callerName || "Unknown Caller"}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600 ml-6">{call.callerPhone}</p>
+                    </div>
+
+                    {/* Badges Row */}
+                    <div className="flex items-center gap-2 mb-4 flex-wrap">
+                      {getOutcomeBadge(call.outcome)}
+                      {call.isRecorded && (
+                        <Badge variant="success" className="text-xs">
+                          <Phone className="h-3 w-3 mr-1" />
+                          Recorded
+                        </Badge>
+                      )}
+                      {call.orders.length > 0 && (
+                        <Badge variant="secondary" className="text-xs bg-green-100 text-green-800">
+                          <ShoppingCart className="h-3 w-3 mr-1" />
+                          {call.orders.length} {call.orders.length === 1 ? "Order" : "Orders"}
+                        </Badge>
+                      )}
+                    </div>
+
+                    {/* Duration */}
+                    <div className="flex items-center justify-between p-3 bg-slate-100 rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <Clock className="h-4 w-4 text-slate-600" />
+                        <span className="text-sm font-medium text-gray-700">Duration</span>
+                      </div>
+                      <span className="text-lg font-bold text-slate-900">
+                        {formatDuration(call.durationSeconds)}
+                      </span>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
-          </div>
-        </CardContent>
-      </Card>
+
+            {/* Pagination */}
+            <Card className="border-0 shadow-xl bg-white/95 backdrop-blur-sm">
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-semibold text-gray-700">
+                    Page {page} of {totalPages}
+                  </p>
+                  <div className="flex gap-3">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage((p) => Math.max(1, p - 1))}
+                      disabled={page === 1}
+                      className="bg-white hover:bg-gradient-to-r hover:from-indigo-600 hover:to-purple-600 hover:text-white border-slate-200"
+                    >
+                      Previous
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={page === totalPages}
+                      className="bg-white hover:bg-gradient-to-r hover:from-indigo-600 hover:to-purple-600 hover:text-white border-slate-200"
+                    >
+                      Next
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </>
+        )}
+      </div>
 
       <Dialog open={!!selectedCall} onOpenChange={() => setSelectedCall(null)}>
         <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-white border-purple-200">
@@ -322,6 +476,169 @@ export default function CallsPage() {
               </div>
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Create Call Dialog */}
+      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+        <DialogContent className="bg-white max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              Add New Call
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Restaurant</Label>
+                <Select value={formData.restaurantId} onValueChange={(value) => setFormData({ ...formData, restaurantId: value })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select restaurant" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {restaurants.map((r) => (
+                      <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Outcome</Label>
+                <Select value={formData.outcome} onValueChange={(value) => setFormData({ ...formData, outcome: value })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ORDER_PLACED">Order Placed</SelectItem>
+                    <SelectItem value="INQUIRY">Inquiry</SelectItem>
+                    <SelectItem value="MISSED">Missed</SelectItem>
+                    <SelectItem value="CANCELED">Canceled</SelectItem>
+                    <SelectItem value="OTHER">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Caller Phone</Label>
+                <Input
+                  value={formData.callerPhone}
+                  onChange={(e) => setFormData({ ...formData, callerPhone: e.target.value })}
+                  placeholder="Enter phone number"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Caller Name (Optional)</Label>
+                <Input
+                  value={formData.callerName}
+                  onChange={(e) => setFormData({ ...formData, callerName: e.target.value })}
+                  placeholder="Enter caller name"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Duration (seconds)</Label>
+              <Input
+                type="number"
+                value={formData.durationSeconds}
+                onChange={(e) => setFormData({ ...formData, durationSeconds: e.target.value })}
+                placeholder="0"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Audio Recording (Optional)</Label>
+              <Input
+                type="file"
+                accept="audio/*"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) {
+                    setFormData({ ...formData, audioFile: file })
+                  }
+                }}
+                className="cursor-pointer"
+              />
+              <p className="text-xs text-gray-500">Upload an audio file for this call recording</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsCreateOpen(false)} className="text-gray-700 hover:text-gray-900">Cancel</Button>
+            <Button onClick={handleCreate} className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white">
+              Create Call
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Call Dialog */}
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent className="bg-white max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+              Edit Call
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Caller Phone</Label>
+                <Input
+                  value={formData.callerPhone}
+                  onChange={(e) => setFormData({ ...formData, callerPhone: e.target.value })}
+                  placeholder="Enter phone number"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Caller Name</Label>
+                <Input
+                  value={formData.callerName}
+                  onChange={(e) => setFormData({ ...formData, callerName: e.target.value })}
+                  placeholder="Enter caller name"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Outcome</Label>
+              <Select value={formData.outcome} onValueChange={(value) => setFormData({ ...formData, outcome: value })}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ORDER_PLACED">Order Placed</SelectItem>
+                  <SelectItem value="INQUIRY">Inquiry</SelectItem>
+                  <SelectItem value="MISSED">Missed</SelectItem>
+                  <SelectItem value="CANCELED">Canceled</SelectItem>
+                  <SelectItem value="OTHER">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditOpen(false)} className="text-gray-700 hover:text-gray-900">Cancel</Button>
+            <Button onClick={handleEdit} className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white">
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
+        <DialogContent className="bg-white">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-red-600">Delete Call</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <p className="text-gray-700">
+              Are you sure you want to delete this call? This action cannot be undone.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleteOpen(false)} className="text-gray-700 hover:text-gray-900">Cancel</Button>
+            <Button onClick={handleDelete} className="bg-red-600 hover:bg-red-700 text-white">
+              Delete Call
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
