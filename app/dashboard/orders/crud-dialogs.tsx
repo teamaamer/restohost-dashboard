@@ -41,7 +41,7 @@ export function OrderCRUDDialogs({
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent className="bg-white max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            <DialogTitle className="text-2xl font-bold text-black">
               Add New Order
             </DialogTitle>
           </DialogHeader>
@@ -123,7 +123,7 @@ export function OrderCRUDDialogs({
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsCreateOpen(false)} className="text-gray-700 hover:text-gray-900">Cancel</Button>
-            <Button onClick={handleCreate} className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white">
+            <Button onClick={handleCreate} className="bg-black hover:bg-gray-900 text-white">
               Create Order
             </Button>
           </DialogFooter>
@@ -134,7 +134,7 @@ export function OrderCRUDDialogs({
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent className="bg-white max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            <DialogTitle className="text-2xl font-bold text-black">
               Edit Order
             </DialogTitle>
           </DialogHeader>
@@ -201,7 +201,7 @@ export function OrderCRUDDialogs({
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsEditOpen(false)} className="text-gray-700 hover:text-gray-900">Cancel</Button>
-            <Button onClick={handleEdit} className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white">
+            <Button onClick={handleEdit} className="bg-black hover:bg-gray-900 text-white">
               Save Changes
             </Button>
           </DialogFooter>

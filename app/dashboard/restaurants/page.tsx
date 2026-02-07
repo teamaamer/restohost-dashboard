@@ -122,7 +122,7 @@ export default function RestaurantsPage() {
       <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-3 shadow-xl border-0">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold text-black">
               Restaurants
             </h1>
             <p className="text-gray-600 mt-0.5 text-sm">
@@ -131,7 +131,7 @@ export default function RestaurantsPage() {
           </div>
           <Button
             onClick={() => setIsCreateOpen(true)}
-            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+            className="bg-black hover:bg-gray-900 text-white"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Restaurant
@@ -154,12 +154,12 @@ export default function RestaurantsPage() {
         <Card className="border-0 shadow-xl bg-white/95 backdrop-blur-sm hover:shadow-2xl transition-all duration-300 hover:scale-105">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-semibold text-gray-700">Total Calls</CardTitle>
-            <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500 to-pink-500 shadow-lg">
+            <div className="p-3 rounded-xl bg-black shadow-lg">
               <Phone className="h-5 w-5 text-white" />
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent">
+            <div className="text-3xl font-bold text-black">
               {restaurants.reduce((sum, r) => sum + r.totalCalls, 0)}
             </div>
           </CardContent>
@@ -216,7 +216,7 @@ export default function RestaurantsPage() {
                   {/* Header with Restaurant Name */}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500">
+                      <div className="p-2 rounded-lg bg-black">
                         <Store className="h-5 w-5 text-white" />
                       </div>
                       <h3 className="font-bold text-gray-900 text-lg">
@@ -257,9 +257,9 @@ export default function RestaurantsPage() {
                   <div className="space-y-3">
                     {/* Calls and Orders */}
                     <div className="grid grid-cols-2 gap-3">
-                      <div className="p-3 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg">
+                      <div className="p-3 bg-gray-50 rounded-lg">
                         <div className="flex items-center gap-2 mb-1">
-                          <Phone className="h-4 w-4 text-purple-600" />
+                          <Phone className="h-4 w-4 text-black" />
                           <span className="text-xs text-gray-600 font-medium">Calls</span>
                         </div>
                         <p className="text-xl font-bold text-gray-900">{restaurant.totalCalls}</p>
@@ -319,7 +319,7 @@ export default function RestaurantsPage() {
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent className="bg-white">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            <DialogTitle className="text-2xl font-bold text-black">
               Add New Restaurant
             </DialogTitle>
           </DialogHeader>
@@ -349,7 +349,7 @@ export default function RestaurantsPage() {
             </Button>
             <Button
               onClick={handleCreate}
-              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+              className="bg-black hover:bg-gray-900 text-white"
             >
               Create Restaurant
             </Button>

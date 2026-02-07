@@ -34,7 +34,7 @@ export function MobileBottomNav() {
               {isActive && (
                 <motion.div
                   layoutId="mobile-active"
-                  className="absolute inset-0 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg"
+                  className="absolute inset-0 bg-black rounded-lg"
                   transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                 />
               )}

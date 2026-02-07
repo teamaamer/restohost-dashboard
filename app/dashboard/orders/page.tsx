@@ -174,7 +174,7 @@ export default function OrdersPage() {
       <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-3 shadow-xl border-0">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold text-black">
               Orders
             </h1>
             <p className="text-gray-600 mt-0.5 text-sm">
@@ -183,7 +183,7 @@ export default function OrdersPage() {
           </div>
           <Button
             onClick={() => setIsCreateOpen(true)}
-            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+            className="bg-black hover:bg-gray-900 text-white"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Order
@@ -283,14 +283,14 @@ export default function OrdersPage() {
 
                     {/* Items and Total */}
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between p-3 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg">
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                         <div className="flex items-center gap-2">
-                          <Package className="h-4 w-4 text-indigo-600" />
+                          <Package className="h-4 w-4 text-black" />
                           <span className="text-sm font-medium text-gray-700">
                             {totalItems(order)} items
                           </span>
                         </div>
-                        <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                        <span className="text-xl font-bold text-black">
                           ${Number(order.total).toFixed(2)}
                         </span>
                       </div>
@@ -329,7 +329,7 @@ export default function OrdersPage() {
                       size="sm"
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
                       disabled={page === 1}
-                      className="bg-white hover:bg-gradient-to-r hover:from-indigo-600 hover:to-purple-600 hover:text-white border-slate-200"
+                      className="bg-white hover:bg-black hover:text-white border-slate-200"
                     >
                       Previous
                     </Button>
@@ -338,7 +338,7 @@ export default function OrdersPage() {
                       size="sm"
                       onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                       disabled={page === totalPages}
-                      className="bg-white hover:bg-gradient-to-r hover:from-indigo-600 hover:to-purple-600 hover:text-white border-slate-200"
+                      className="bg-white hover:bg-black hover:text-white border-slate-200"
                     >
                       Next
                     </Button>
@@ -351,24 +351,24 @@ export default function OrdersPage() {
       </div>
 
       <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-white border-purple-200">
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto bg-white border-gray-200">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            <DialogTitle className="text-2xl font-bold text-black">
               Order Details
             </DialogTitle>
           </DialogHeader>
           {selectedOrder && (
             <div className="space-y-6">
               <div className="grid grid-cols-2 gap-4">
-                <div className="p-3 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50">
+                <div className="p-3 rounded-xl bg-gray-50">
                   <p className="text-xs text-gray-600 font-semibold uppercase tracking-wide">Restaurant</p>
                   <p className="font-semibold text-gray-800 mt-1">{selectedOrder.restaurant.name}</p>
                 </div>
-                <div className="p-3 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50">
+                <div className="p-3 rounded-xl bg-gray-50">
                   <p className="text-xs text-gray-600 font-semibold uppercase tracking-wide">Order Type</p>
                   <Badge className="mt-1">{selectedOrder.orderType}</Badge>
                 </div>
-                <div className="p-3 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50">
+                <div className="p-3 rounded-xl bg-gray-50">
                   <p className="text-xs text-gray-600 font-semibold uppercase tracking-wide">Payment Method</p>
                   <Badge variant="outline" className="mt-1 text-gray-700">{selectedOrder.paymentMethod}</Badge>
                 </div>
@@ -378,11 +378,11 @@ export default function OrdersPage() {
                     ${Number(selectedOrder.total).toFixed(2)}
                   </p>
                 </div>
-                <div className="p-3 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50">
+                <div className="p-3 rounded-xl bg-gray-50">
                   <p className="text-xs text-gray-600 font-semibold uppercase tracking-wide">Customer</p>
                   <p className="font-medium text-gray-800 mt-1">{selectedOrder.customerName || "N/A"}</p>
                 </div>
-                <div className="p-3 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50">
+                <div className="p-3 rounded-xl bg-gray-50">
                   <p className="text-xs text-gray-600 font-semibold uppercase tracking-wide">Phone</p>
                   <p className="font-medium text-gray-800 mt-1">{selectedOrder.customerPhone || "N/A"}</p>
                 </div>
@@ -390,14 +390,14 @@ export default function OrdersPage() {
 
               <div>
                 <h3 className="font-bold text-lg text-gray-800 mb-3 flex items-center gap-2">
-                  <div className="p-2 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500">
+                  <div className="p-2 rounded-lg bg-black">
                     <Package className="h-4 w-4 text-white" />
                   </div>
                   Order Items
                 </h3>
                 <div className="space-y-2">
                   {selectedOrder.items.map((item, idx) => (
-                    <div key={idx} className="flex justify-between items-start p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl hover:from-indigo-100 hover:to-purple-100 transition-all duration-200">
+                    <div key={idx} className="flex justify-between items-start p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-200">
                       <div className="flex-1">
                         <p className="font-semibold text-gray-800">{item.itemName}</p>
                         <p className="text-sm text-gray-600 mt-1">Quantity: {item.quantity}</p>
@@ -408,7 +408,7 @@ export default function OrdersPage() {
                         )}
                       </div>
                       {item.unitPrice && (
-                        <p className="font-bold text-lg bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                        <p className="font-bold text-lg text-black">
                           ${(Number(item.unitPrice) * item.quantity).toFixed(2)}
                         </p>
                       )}

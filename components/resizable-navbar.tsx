@@ -129,16 +129,16 @@ export const NavbarLogo = () => {
   return (
     <Link href="/" className="flex items-center gap-1.5 lg:gap-3 group relative z-10 flex-shrink-0 min-w-fit">
       <div className="relative">
-        <div className="absolute -inset-1 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl blur-lg opacity-20 group-hover:opacity-40 transition-all duration-500"></div>
-        <div className="relative w-8 h-8 lg:w-14 lg:h-14 bg-gradient-to-br from-indigo-600 via-purple-600 to-indigo-600 rounded-lg lg:rounded-2xl flex items-center justify-center shadow-xl shadow-purple-600/20 group-hover:shadow-purple-600/40 transition-all duration-300 group-hover:scale-105">
+        <div className="absolute -inset-1 bg-black rounded-xl blur-lg opacity-20 group-hover:opacity-40 transition-all duration-500"></div>
+        <div className="relative w-8 h-8 lg:w-14 lg:h-14 bg-black rounded-lg lg:rounded-2xl flex items-center justify-center shadow-xl shadow-black/20 group-hover:shadow-black/40 transition-all duration-300 group-hover:scale-105">
           <BarChart3 className="w-4 h-4 lg:w-7 lg:h-7 text-white" strokeWidth={2.5} />
         </div>
       </div>
       <div className="flex flex-col -space-y-0.5 lg:-space-y-1">
-        <span className="text-slate-900 font-bold text-sm lg:text-xl tracking-tight leading-none group-hover:bg-gradient-to-r group-hover:from-indigo-600 group-hover:to-purple-600 group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300">
+        <span className="text-slate-900 font-bold text-sm lg:text-xl tracking-tight leading-none group-hover:text-black transition-all duration-300">
           Restaurant
         </span>
-        <span className="text-slate-900 font-bold text-sm lg:text-xl tracking-tight leading-none group-hover:bg-gradient-to-r group-hover:from-indigo-600 group-hover:to-purple-600 group-hover:bg-clip-text group-hover:text-transparent transition-all duration-300">
+        <span className="text-slate-900 font-bold text-sm lg:text-xl tracking-tight leading-none group-hover:text-black transition-all duration-300">
           Analytics
         </span>
       </div>
@@ -170,7 +170,7 @@ export const NavbarButton = ({
 
   const variantStyles = {
     primary:
-      "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-[0_0_24px_rgba(99,102,241,0.15)] hover:from-indigo-700 hover:to-purple-700",
+      "bg-black text-white shadow-[0_0_24px_rgba(0,0,0,0.15)] hover:bg-gray-900",
     secondary: "bg-transparent text-slate-900 hover:bg-slate-900/10",
   };
 

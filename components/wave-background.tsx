@@ -74,12 +74,9 @@ export function WaveBackground() {
         const frequency = 1 + progress * 0.5;
         const phase = time + i * 20;
         
-        // Gradient from indigo (240) to purple (270) hue
-        const hue = 240 + progress * 30;
-        const saturation = 80;
-        const lightness = 50 + progress * 10;
-        const alpha = 0.3 + progress * 0.4;
-        const color = `hsla(${hue}, ${saturation}%, ${lightness}%, ${alpha})`;
+        // Pure black with varying opacity
+        const alpha = 0.15 + progress * 0.25;
+        const color = `rgba(0, 0, 0, ${alpha})`;
         const lineWidth = 1 + progress * 1.5;
 
         drawWave(yOffset, amplitude, frequency, phase, color, lineWidth);

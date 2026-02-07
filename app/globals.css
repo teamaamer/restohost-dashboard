@@ -81,10 +81,94 @@ button, a, input, select, textarea {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: #000000;
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+  background: #333333;
+}
+
+/* React Date Range Custom Styles */
+.rdrCalendarWrapper {
+  background: white;
+  color: #000000;
+}
+
+.rdrDateDisplayWrapper {
+  background-color: white;
+}
+
+.rdrDateDisplay {
+  margin: 0;
+}
+
+.rdrDateDisplayItem {
+  background-color: #f3f4f6;
+  border: 1px solid #e5e7eb;
+  color: #000000;
+}
+
+.rdrDateDisplayItem input {
+  color: #000000;
+}
+
+.rdrMonthAndYearWrapper {
+  padding-top: 0;
+}
+
+.rdrMonthAndYearPickers select {
+  color: #000000;
+}
+
+.rdrMonthPicker select, .rdrYearPicker select {
+  color: #000000;
+}
+
+.rdrNextPrevButton {
+  background: white;
+  border: 1px solid #e5e7eb;
+}
+
+.rdrNextPrevButton:hover {
+  background: #f3f4f6;
+}
+
+.rdrDay {
+  color: #000000;
+}
+
+.rdrDayNumber span {
+  color: #000000;
+}
+
+.rdrDayToday .rdrDayNumber span:after {
+  background: #000000;
+}
+
+.rdrDayPassive .rdrDayNumber span {
+  color: #9ca3af;
+}
+
+.rdrSelected, .rdrInRange, .rdrStartEdge, .rdrEndEdge {
+  background: #000000 !important;
+  color: white !important;
+}
+
+.rdrDayStartPreview, .rdrDayInPreview, .rdrDayEndPreview {
+  border-color: #000000 !important;
+}
+
+.rdrDefinedRangesWrapper {
+  display: none;
+}
+
+.rdrMonthName {
+  color: #000000;
+  font-weight: 600;
+}
+
+.rdrWeekDay {
+  color: #6b7280;
+  font-weight: 600;
 }

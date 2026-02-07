@@ -12,32 +12,31 @@ interface KpiCardProps {
   }
 }
 
-const gradients = [
-  "from-blue-500 to-cyan-500",
-  "from-purple-500 to-pink-500",
-  "from-orange-500 to-red-500",
-  "from-green-500 to-emerald-500",
-  "from-indigo-500 to-purple-500",
-  "from-pink-500 to-rose-500",
+const iconColors = [
+  { bg: "from-cyan-500 to-blue-500", text: "text-black" }, // Total Sales - cyan/blue for money
+  { bg: "from-purple-500 to-purple-600", text: "text-black" }, // Orders - purple for shopping cart
+  { bg: "from-pink-500 to-red-500", text: "text-black" }, // Avg Ticket - pink/red for trending up
+  { bg: "from-cyan-500 to-blue-500", text: "text-black" }, // Total Calls - cyan/blue for phone
+  { bg: "from-purple-500 to-purple-600", text: "text-black" }, // Call Minutes - purple for clock/time
+  { bg: "from-pink-500 to-red-500", text: "text-black" }, // Conversion Rate - pink/red for percentage
 ]
 
 let cardIndex = 0
 
 export function KpiCard({ title, value, icon: Icon, description, trend }: KpiCardProps) {
-  const gradient = gradients[cardIndex % gradients.length]
+  const colors = iconColors[cardIndex % iconColors.length]
   cardIndex++
   
   return (
-    <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] bg-white/95 backdrop-blur-sm">
-      <div className={`absolute inset-0 bg-gradient-to-br ${gradient} opacity-10`}></div>
+    <Card className="relative overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-[1.02] bg-white backdrop-blur-sm">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 pt-3 px-4 relative z-10">
         <CardTitle className="text-xs font-semibold text-gray-700">{title}</CardTitle>
-        <div className={`p-2 rounded-lg bg-gradient-to-br ${gradient} shadow-md`}>
+        <div className={`p-2 rounded-lg bg-gradient-to-br ${colors.bg} shadow-md`}>
           <Icon className="h-4 w-4 text-white" />
         </div>
       </CardHeader>
       <CardContent className="relative z-10 px-4 pb-3">
-        <div className={`text-2xl font-bold bg-gradient-to-r ${gradient} bg-clip-text text-transparent`}>
+        <div className={`text-2xl font-bold ${colors.text}`}>
           {value}
         </div>
         {description && (

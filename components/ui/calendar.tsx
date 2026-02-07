@@ -25,7 +25,7 @@ function Calendar({
         nav: "space-x-1 flex items-center",
         nav_button: cn(
           buttonVariants({ variant: "outline" }),
-          "h-7 w-7 bg-white border-gray-200 p-0 hover:bg-purple-50 hover:border-purple-300 text-gray-700"
+          "h-7 w-7 bg-white border-gray-200 p-0 hover:bg-gray-50 hover:border-gray-300 text-gray-700"
         ),
         nav_button_previous: "absolute left-1",
         nav_button_next: "absolute right-1",
@@ -34,20 +34,20 @@ function Calendar({
         head_cell:
           "text-gray-600 rounded-md w-10 font-semibold text-[0.8rem] flex items-center justify-center",
         row: "flex justify-between w-full mt-1",
-        cell: "h-10 w-10 text-center text-sm p-0 relative flex items-center justify-center [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-purple-100 [&:has([aria-selected])]:bg-purple-100 first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+        cell: "h-10 w-10 text-center text-sm p-0 relative flex items-center justify-center [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-gray-100 [&:has([aria-selected])]:bg-gray-100 first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
         day: cn(
           buttonVariants({ variant: "ghost" }),
-          "h-9 w-9 p-0 font-medium text-gray-700 hover:bg-purple-50 hover:text-purple-700 aria-selected:opacity-100"
+          "h-9 w-9 p-0 font-medium text-gray-700 hover:bg-gray-100 hover:text-black aria-selected:opacity-100"
         ),
         day_range_end: "day-range-end",
         day_selected:
-          "bg-gradient-to-r from-indigo-600 to-purple-600 text-white hover:from-indigo-700 hover:to-purple-700 focus:from-indigo-700 focus:to-purple-700",
-        day_today: "bg-purple-100 text-purple-700 font-bold",
+          "bg-black text-white hover:bg-gray-900 focus:bg-gray-900",
+        day_today: "bg-gray-100 text-black font-bold",
         day_outside:
-          "day-outside text-gray-400 opacity-50 aria-selected:bg-purple-50 aria-selected:text-gray-400 aria-selected:opacity-50",
+          "day-outside text-gray-400 opacity-50 aria-selected:bg-gray-50 aria-selected:text-gray-400 aria-selected:opacity-50",
         day_disabled: "text-gray-300 opacity-50",
         day_range_middle:
-          "aria-selected:bg-purple-100 aria-selected:text-purple-700",
+          "aria-selected:bg-gray-100 aria-selected:text-black",
         day_hidden: "invisible",
         ...classNames,
       }}

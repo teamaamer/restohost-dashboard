@@ -106,18 +106,26 @@ export function OverviewContent() {
   return (
     <div className="space-y-3">
       <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-3 shadow-xl border-0">
-        <h3 className="text-xs font-semibold text-gray-700 mb-3 uppercase tracking-wide">Filters</h3>
-        <div className="flex flex-wrap gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-black">
+              Overview
+            </h1>
+            <p className="text-gray-600 mt-0.5 text-sm">
+              Restaurant analytics and insights
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-4">
           <DateRangePicker date={dateRange} onDateChange={setDateRange} />
           
           <Select value={restaurantId} onValueChange={setRestaurantId}>
-            <SelectTrigger className="w-[200px] bg-white border-gray-200 hover:border-purple-500 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 focus:border-purple-500 focus:ring-purple-500 transition-all duration-200 font-medium text-gray-700">
+            <SelectTrigger className="w-[200px] bg-white border-gray-200 hover:border-black hover:bg-gray-50 focus:border-black focus:ring-black transition-all duration-200 font-medium text-gray-700">
               <SelectValue placeholder="All Restaurants" />
             </SelectTrigger>
-            <SelectContent className="bg-white border-purple-200 shadow-xl">
-              <SelectItem value="all" className="text-gray-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50">All Restaurants</SelectItem>
+            <SelectContent className="bg-white border-gray-200 shadow-xl">
+              <SelectItem value="all" className="text-gray-700 hover:bg-gray-50">All Restaurants</SelectItem>
               {restaurants.map((r) => (
-                <SelectItem key={r.id} value={r.id} className="text-gray-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50">
+                <SelectItem key={r.id} value={r.id} className="text-gray-700 hover:bg-gray-50">
                   {r.name}
                 </SelectItem>
               ))}
@@ -125,28 +133,29 @@ export function OverviewContent() {
           </Select>
 
           <Select value={orderType} onValueChange={setOrderType}>
-            <SelectTrigger className="w-[150px] bg-white border-gray-200 hover:border-purple-500 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 focus:border-purple-500 focus:ring-purple-500 transition-all duration-200 font-medium text-gray-700">
+            <SelectTrigger className="w-[150px] bg-white border-gray-200 hover:border-black hover:bg-gray-50 focus:border-black focus:ring-black transition-all duration-200 font-medium text-gray-700">
               <SelectValue placeholder="Order Type" />
             </SelectTrigger>
-            <SelectContent className="bg-white border-purple-200 shadow-xl">
-              <SelectItem value="all" className="text-gray-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50">All Types</SelectItem>
-              <SelectItem value="PICKUP" className="text-gray-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50">Pickup</SelectItem>
-              <SelectItem value="DELIVERY" className="text-gray-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50">Delivery</SelectItem>
+            <SelectContent className="bg-white border-gray-200 shadow-xl">
+              <SelectItem value="all" className="text-gray-700 hover:bg-gray-50">All Types</SelectItem>
+              <SelectItem value="PICKUP" className="text-gray-700 hover:bg-gray-50">Pickup</SelectItem>
+              <SelectItem value="DELIVERY" className="text-gray-700 hover:bg-gray-50">Delivery</SelectItem>
             </SelectContent>
           </Select>
 
           <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-            <SelectTrigger className="w-[150px] bg-white border-gray-200 hover:border-purple-500 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 focus:border-purple-500 focus:ring-purple-500 transition-all duration-200 font-medium text-gray-700">
+            <SelectTrigger className="w-[150px] bg-white border-gray-200 hover:border-black hover:bg-gray-50 focus:border-black focus:ring-black transition-all duration-200 font-medium text-gray-700">
               <SelectValue placeholder="Payment" />
             </SelectTrigger>
-            <SelectContent className="bg-white border-purple-200 shadow-xl">
-              <SelectItem value="all" className="text-gray-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50">All Methods</SelectItem>
-              <SelectItem value="CASH" className="text-gray-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50">Cash</SelectItem>
-              <SelectItem value="CARD" className="text-gray-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50">Card</SelectItem>
-              <SelectItem value="ONLINE" className="text-gray-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50">Online</SelectItem>
-              <SelectItem value="OTHER" className="text-gray-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50">Other</SelectItem>
+            <SelectContent className="bg-white border-gray-200 shadow-xl">
+              <SelectItem value="all" className="text-gray-700 hover:bg-gray-50">All Methods</SelectItem>
+              <SelectItem value="CASH" className="text-gray-700 hover:bg-gray-50">Cash</SelectItem>
+              <SelectItem value="CARD" className="text-gray-700 hover:bg-gray-50">Card</SelectItem>
+              <SelectItem value="ONLINE" className="text-gray-700 hover:bg-gray-50">Online</SelectItem>
+              <SelectItem value="OTHER" className="text-gray-700 hover:bg-gray-50">Other</SelectItem>
             </SelectContent>
           </Select>
+          </div>
         </div>
       </div>
 
@@ -210,7 +219,7 @@ export function OverviewContent() {
                       <XAxis dataKey="date" tick={{ fontSize: 10 }} />
                       <YAxis tick={{ fontSize: 10 }} />
                       <Tooltip />
-                      <Line type="monotone" dataKey="sales" stroke="#8884d8" strokeWidth={2} />
+                      <Line type="monotone" dataKey="sales" stroke="#22c55e" strokeWidth={2} />
                     </LineChart>
                   </ResponsiveContainer>
                 </TabsContent>
@@ -221,7 +230,7 @@ export function OverviewContent() {
                       <XAxis dataKey="date" tick={{ fontSize: 10 }} />
                       <YAxis tick={{ fontSize: 10 }} />
                       <Tooltip />
-                      <Line type="monotone" dataKey="orders" stroke="#82ca9d" strokeWidth={2} />
+                      <Line type="monotone" dataKey="orders" stroke="#22c55e" strokeWidth={2} />
                     </LineChart>
                   </ResponsiveContainer>
                 </TabsContent>
@@ -240,7 +249,7 @@ export function OverviewContent() {
                   <XAxis dataKey="date" tick={{ fontSize: 10 }} />
                   <YAxis tick={{ fontSize: 10 }} />
                   <Tooltip />
-                  <Bar dataKey="calls" fill="#8884d8" />
+                  <Bar dataKey="calls" fill="#22c55e" />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -280,9 +289,9 @@ export function OverviewContent() {
             <CardContent className="flex-1 overflow-y-auto">
               <div className="space-y-1.5">
                 {metrics.topItems.slice(0, 6).map((item, index) => (
-                  <div key={index} className="flex items-center justify-between p-2 rounded-lg bg-gradient-to-r from-indigo-50 to-purple-50 hover:from-indigo-100 hover:to-purple-100 transition-all duration-200">
+                  <div key={index} className="flex items-center justify-between p-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-all duration-200">
                     <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                      <div className="w-6 h-6 rounded-lg bg-black flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
                         {index + 1}
                       </div>
                       <div className="min-w-0 flex-1">
@@ -292,7 +301,7 @@ export function OverviewContent() {
                         </p>
                       </div>
                     </div>
-                    <p className="font-bold text-sm bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent ml-2">
+                    <p className="font-bold text-sm text-black ml-2">
                       ${item.revenue.toFixed(0)}
                     </p>
                   </div>

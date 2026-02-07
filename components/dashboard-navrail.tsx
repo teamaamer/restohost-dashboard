@@ -34,8 +34,8 @@ export default function DashboardNavRail() {
   const tabClass = (active: boolean) =>
     `group w-full flex items-center gap-3 rounded-xl border transition-all duration-300 ease-out ${
       active
-        ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg shadow-indigo-500/50"
-        : "text-gray-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 hover:text-indigo-600"
+        ? "bg-black text-white shadow-lg shadow-black/50"
+        : "text-gray-700 hover:bg-gray-50 hover:text-black"
     } ${isHovered ? "px-3 py-2.5" : "justify-center px-3 py-2.5"}`;
 
   return (
@@ -55,7 +55,7 @@ export default function DashboardNavRail() {
             href="/"
             className="flex items-center hover:opacity-80 transition-opacity overflow-hidden"
           >
-            <div className="w-8 h-8 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center flex-shrink-0">
               <BarChart3 className="h-5 w-5 text-white" strokeWidth={2.5} />
             </div>
             <motion.span

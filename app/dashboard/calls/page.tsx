@@ -205,7 +205,7 @@ export default function CallsPage() {
       <div className="bg-white/95 backdrop-blur-sm rounded-2xl p-3 shadow-xl border-0">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            <h1 className="text-2xl font-bold text-black">
               Calls
             </h1>
             <p className="text-gray-600 mt-0.5 text-sm">
@@ -214,7 +214,7 @@ export default function CallsPage() {
           </div>
           <Button
             onClick={() => setIsCreateOpen(true)}
-            className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+            className="bg-black hover:bg-gray-900 text-white"
           >
             <Plus className="h-4 w-4 mr-2" />
             Add Call
@@ -293,9 +293,9 @@ export default function CallsPage() {
                     </div>
 
                     {/* Caller Info */}
-                    <div className="mb-4 p-3 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg">
+                    <div className="mb-4 p-3 bg-gray-50 rounded-lg">
                       <div className="flex items-center gap-2 mb-1">
-                        <Phone className="h-4 w-4 text-indigo-600" />
+                        <Phone className="h-4 w-4 text-black" />
                         <span className="font-semibold text-gray-900">
                           {call.callerName || "Unknown Caller"}
                         </span>
@@ -348,7 +348,7 @@ export default function CallsPage() {
                       size="sm"
                       onClick={() => setPage((p) => Math.max(1, p - 1))}
                       disabled={page === 1}
-                      className="bg-white hover:bg-gradient-to-r hover:from-indigo-600 hover:to-purple-600 hover:text-white border-slate-200"
+                      className="bg-white hover:bg-black hover:text-white border-slate-200"
                     >
                       Previous
                     </Button>
@@ -357,7 +357,7 @@ export default function CallsPage() {
                       size="sm"
                       onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
                       disabled={page === totalPages}
-                      className="bg-white hover:bg-gradient-to-r hover:from-indigo-600 hover:to-purple-600 hover:text-white border-slate-200"
+                      className="bg-white hover:bg-black hover:text-white border-slate-200"
                     >
                       Next
                     </Button>
@@ -370,18 +370,18 @@ export default function CallsPage() {
       </div>
 
       <Dialog open={!!selectedCall} onOpenChange={() => setSelectedCall(null)}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-white border-purple-200">
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto bg-white border-gray-200">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            <DialogTitle className="text-2xl font-bold text-black">
               Call Details
             </DialogTitle>
           </DialogHeader>
           {selectedCall && (
             <div className="space-y-6">
               {selectedCall.recordingUrl && (
-                <div className="p-4 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50">
+                <div className="p-4 rounded-xl bg-gray-50">
                   <h3 className="font-bold text-lg text-gray-800 mb-3 flex items-center gap-2">
-                    <div className="p-2 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500">
+                    <div className="p-2 rounded-lg bg-black">
                       <Phone className="h-4 w-4 text-white" />
                     </div>
                     Audio Recording
@@ -394,20 +394,20 @@ export default function CallsPage() {
               )}
 
               <div className="grid grid-cols-2 gap-4">
-                <div className="p-3 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50">
+                <div className="p-3 rounded-xl bg-gray-50">
                   <p className="text-xs text-gray-600 font-semibold uppercase tracking-wide">Restaurant</p>
                   <p className="font-semibold text-gray-800 mt-1">{selectedCall.restaurant.name}</p>
                 </div>
-                <div className="p-3 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50">
+                <div className="p-3 rounded-xl bg-gray-50">
                   <p className="text-xs text-gray-600 font-semibold uppercase tracking-wide">Caller</p>
                   <p className="font-semibold text-gray-800 mt-1">{selectedCall.callerName || "Unknown"}</p>
                   <p className="text-xs text-gray-600 mt-0.5">{selectedCall.callerPhone}</p>
                 </div>
-                <div className="p-3 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50">
+                <div className="p-3 rounded-xl bg-gray-50">
                   <p className="text-xs text-gray-600 font-semibold uppercase tracking-wide">Duration</p>
                   <p className="font-semibold text-gray-800 mt-1">{formatDuration(selectedCall.durationSeconds)}</p>
                 </div>
-                <div className="p-3 rounded-xl bg-gradient-to-r from-indigo-50 to-purple-50">
+                <div className="p-3 rounded-xl bg-gray-50">
                   <p className="text-xs text-gray-600 font-semibold uppercase tracking-wide mb-2">Outcome</p>
                   {getOutcomeBadge(selectedCall.outcome)}
                 </div>
@@ -416,7 +416,7 @@ export default function CallsPage() {
               {selectedCall.summaryText && (
                 <div>
                   <h3 className="font-bold text-lg text-gray-800 mb-3">Call Summary</h3>
-                  <p className="text-sm text-gray-700 bg-gradient-to-r from-indigo-50 to-purple-50 p-4 rounded-xl leading-relaxed">
+                  <p className="text-sm text-gray-700 bg-gray-50 p-4 rounded-xl leading-relaxed">
                     {selectedCall.summaryText}
                   </p>
                 </div>
@@ -432,7 +432,7 @@ export default function CallsPage() {
                   </h3>
                   <div className="space-y-2">
                     {selectedCall.orders.map((order, idx) => (
-                      <div key={idx} className="p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl hover:from-indigo-100 hover:to-purple-100 transition-all duration-200">
+                      <div key={idx} className="p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-200">
                         <div className="flex justify-between items-center mb-2">
                           <Badge variant="outline" className="text-gray-700">{order.paymentMethod}</Badge>
                           <p className="font-bold text-lg bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
@@ -483,7 +483,7 @@ export default function CallsPage() {
       <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
         <DialogContent className="bg-white max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            <DialogTitle className="text-2xl font-bold text-black">
               Add New Call
             </DialogTitle>
           </DialogHeader>
@@ -563,7 +563,7 @@ export default function CallsPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsCreateOpen(false)} className="text-gray-700 hover:text-gray-900">Cancel</Button>
-            <Button onClick={handleCreate} className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white">
+            <Button onClick={handleCreate} className="bg-black hover:bg-gray-900 text-white">
               Create Call
             </Button>
           </DialogFooter>
@@ -574,7 +574,7 @@ export default function CallsPage() {
       <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
         <DialogContent className="bg-white max-w-2xl">
           <DialogHeader>
-            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            <DialogTitle className="text-2xl font-bold text-black">
               Edit Call
             </DialogTitle>
           </DialogHeader>
@@ -615,7 +615,7 @@ export default function CallsPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsEditOpen(false)} className="text-gray-700 hover:text-gray-900">Cancel</Button>
-            <Button onClick={handleEdit} className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white">
+            <Button onClick={handleEdit} className="bg-black hover:bg-gray-900 text-white">
               Save Changes
             </Button>
           </DialogFooter>
