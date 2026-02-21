@@ -1,19 +1,19 @@
 "use client"
 
 import { useState } from "react"
-import { signIn } from "next-auth/react"
-import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { auth } from "@/lib/api-client"
+import { useAuthStore } from "@/lib/auth-store"
 
 export default function LoginPage() {
-  const router = useRouter()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const login = useAuthStore((state) => state.login)
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -21,20 +21,47 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      const result = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      })
-
-      if (result?.error) {
-        setError("Invalid credentials")
-      } else {
-        router.push("/dashboard")
-        router.refresh()
+      console.log('[LOGIN] Starting login...')
+      const { access_token, refresh_token } = await auth.login(email, password)
+      console.log('[LOGIN] Got tokens')
+      
+      // Decode JWT to get user info
+      const payload = JSON.parse(atob(access_token.split('.')[1]))
+      console.log('[LOGIN] Decoded JWT payload:', payload)
+      
+      const user = {
+        id: payload.sub,
+        tenant_id: payload.tenant_id || null,
+        email: email,
+        full_name: email.split('@')[0],
+        role: payload.role || 'staff_viewer',
+        is_active: true,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
       }
-    } catch (error) {
-      setError("An error occurred")
+      console.log('[LOGIN] Created user object:', user)
+      
+      // Store auth state
+      console.log('[LOGIN] Calling login function...')
+      login(access_token, refresh_token, user)
+      
+      // Check if state was set
+      const authState = useAuthStore.getState()
+      console.log('[LOGIN] Auth state after login:', {
+        isAuthenticated: authState.isAuthenticated,
+        hasUser: !!authState.user,
+        hasToken: !!authState.accessToken
+      })
+      
+      // Small delay to ensure persistence
+      await new Promise(resolve => setTimeout(resolve, 200))
+      
+      console.log('[LOGIN] Redirecting to dashboard...')
+      // Redirect
+      window.location.href = "/dashboard"
+    } catch (error: any) {
+      console.error('[LOGIN] Error:', error)
+      setError(error.response?.data?.detail || "Invalid credentials")
     } finally {
       setLoading(false)
     }
@@ -58,7 +85,7 @@ export default function LoginPage() {
             Restaurant Analytics
           </CardTitle>
           <CardDescription className="text-gray-600">
-            Enter your credentials to access the dashboard
+            Sign in with your Sammai account
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -100,10 +127,10 @@ export default function LoginPage() {
               {loading ? "Signing in..." : "Sign in"}
             </Button>
           </form>
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <p className="text-xs text-gray-600 text-center font-medium">
-              Default credentials:<br/>
-              <span className="text-black font-semibold">admin@restaurant.com</span> / <span className="text-black font-semibold">admin123</span>
+          <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <p className="text-xs text-blue-900 text-center font-medium">
+              Use your Sammai account credentials<br/>
+              <span className="text-blue-700">Contact your administrator if you need access</span>
             </p>
           </div>
         </CardContent>

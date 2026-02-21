@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { LayoutDashboard, ShoppingBag, Phone, Store, Home, LogOut } from "lucide-react"
 import { motion } from "framer-motion"
-import { signOut } from "@/lib/auth"
+import { useAuthStore } from "@/lib/auth-store"
 
 const navigation = [
   { name: "Home", href: "/", icon: Home },
@@ -16,6 +16,7 @@ const navigation = [
 
 export function MobileBottomNav() {
   const pathname = usePathname()
+  const logout = useAuthStore((state) => state.logout)
 
   return (
     <div className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-t border-slate-200 shadow-lg">
@@ -56,8 +57,9 @@ export function MobileBottomNav() {
 
         {/* Logout */}
         <button
-          onClick={async () => {
-            await signOut({ redirectTo: "/login" })
+          onClick={() => {
+            logout()
+            window.location.href = "/login"
           }}
           className="flex flex-col items-center justify-center flex-1 py-1.5 px-1 rounded-lg transition-all duration-200"
         >

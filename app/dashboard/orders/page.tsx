@@ -2,10 +2,13 @@
 
 import { useEffect, useState } from "react"
 import { format } from "date-fns"
-import { Eye, Package, CreditCard, Phone, Plus, Edit, Trash2 } from "lucide-react"
+import { Eye, Package, CreditCard, Phone, Edit } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { OrderCRUDDialogs } from "./crud-dialogs"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useAuthStore } from "@/lib/auth-store"
 import {
   Table,
   TableBody,
@@ -42,17 +45,14 @@ interface Order {
 }
 
 export default function OrdersPage() {
+  const accessToken = useAuthStore((state) => state.accessToken)
   const [orders, setOrders] = useState<Order[]>([])
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  const [isCreateOpen, setIsCreateOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
-  const [restaurants, setRestaurants] = useState<any[]>([])
   const [formData, setFormData] = useState({
-    restaurantId: "",
     orderType: "PICKUP",
     paymentMethod: "CASH",
     total: "",
@@ -62,28 +62,25 @@ export default function OrdersPage() {
 
   useEffect(() => {
     fetchOrders()
-    fetchRestaurants()
   }, [page])
 
-  const fetchRestaurants = async () => {
-    try {
-      const res = await fetch("/api/restaurants")
-      const data = await res.json()
-      setRestaurants(data)
-    } catch (error) {
-      console.error("Failed to fetch restaurants:", error)
-    }
-  }
-
   const fetchOrders = async () => {
+    if (!accessToken) return
+    
     setLoading(true)
     try {
-      const res = await fetch(`/api/orders?page=${page}&limit=20`)
+      const res = await fetch(`/api/orders?page=${page}&limit=20`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      })
       const data = await res.json()
-      setOrders(data.orders)
-      setTotalPages(data.totalPages)
+      setOrders(data.orders || [])
+      setTotalPages(data.totalPages || 1)
     } catch (error) {
       console.error("Failed to fetch orders:", error)
+      setOrders([])
+      setTotalPages(1)
     } finally {
       setLoading(false)
     }
@@ -91,30 +88,6 @@ export default function OrdersPage() {
 
   const totalItems = (order: Order) => {
     return order.items.reduce((sum, item) => sum + item.quantity, 0)
-  }
-
-  const handleCreate = async () => {
-    try {
-      const res = await fetch("/api/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      })
-      if (res.ok) {
-        setIsCreateOpen(false)
-        setFormData({
-          restaurantId: "",
-          orderType: "PICKUP",
-          paymentMethod: "CASH",
-          total: "",
-          customerName: "",
-          customerPhone: "",
-        })
-        fetchOrders()
-      }
-    } catch (error) {
-      console.error("Failed to create order:", error)
-    }
   }
 
   const handleEdit = async () => {
@@ -135,26 +108,9 @@ export default function OrdersPage() {
     }
   }
 
-  const handleDelete = async () => {
-    if (!selectedOrder) return
-    try {
-      const res = await fetch(`/api/orders/${selectedOrder.id}`, {
-        method: "DELETE",
-      })
-      if (res.ok) {
-        setIsDeleteOpen(false)
-        setSelectedOrder(null)
-        fetchOrders()
-      }
-    } catch (error) {
-      console.error("Failed to delete order:", error)
-    }
-  }
-
   const openEditDialog = (order: Order) => {
     setSelectedOrder(order)
     setFormData({
-      restaurantId: "",
       orderType: order.orderType,
       paymentMethod: order.paymentMethod,
       total: order.total.toString(),
@@ -162,11 +118,6 @@ export default function OrdersPage() {
       customerPhone: order.customerPhone || "",
     })
     setIsEditOpen(true)
-  }
-
-  const openDeleteDialog = (order: Order) => {
-    setSelectedOrder(order)
-    setIsDeleteOpen(true)
   }
 
   return (
@@ -181,13 +132,6 @@ export default function OrdersPage() {
               View and manage all restaurant orders
             </p>
           </div>
-          <Button
-            onClick={() => setIsCreateOpen(true)}
-            className="bg-black hover:bg-gray-900 text-white"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Order
-          </Button>
         </div>
       </div>
 
@@ -246,17 +190,6 @@ export default function OrdersPage() {
                           className="hover:bg-indigo-100"
                         >
                           <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            openDeleteDialog(order)
-                          }}
-                          className="hover:bg-red-100 hover:text-red-600"
-                        >
-                          <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
                     </div>
@@ -444,21 +377,81 @@ export default function OrdersPage() {
         </DialogContent>
       </Dialog>
 
-      <OrderCRUDDialogs
-        isCreateOpen={isCreateOpen}
-        setIsCreateOpen={setIsCreateOpen}
-        isEditOpen={isEditOpen}
-        setIsEditOpen={setIsEditOpen}
-        isDeleteOpen={isDeleteOpen}
-        setIsDeleteOpen={setIsDeleteOpen}
-        formData={formData}
-        setFormData={setFormData}
-        restaurants={restaurants}
-        selectedOrder={selectedOrder}
-        handleCreate={handleCreate}
-        handleEdit={handleEdit}
-        handleDelete={handleDelete}
-      />
+      {/* Edit Order Dialog */}
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+        <DialogContent className="bg-white max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-black">
+              Edit Order
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Order Type</Label>
+                <Select value={formData.orderType} onValueChange={(value) => setFormData({ ...formData, orderType: value })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="PICKUP">Pickup</SelectItem>
+                    <SelectItem value="DELIVERY">Delivery</SelectItem>
+                    <SelectItem value="DINE_IN">Dine In</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Payment Method</Label>
+                <Select value={formData.paymentMethod} onValueChange={(value) => setFormData({ ...formData, paymentMethod: value })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="CASH">Cash</SelectItem>
+                    <SelectItem value="CARD">Card</SelectItem>
+                    <SelectItem value="ONLINE">Online</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Customer Name</Label>
+                <Input
+                  value={formData.customerName}
+                  onChange={(e) => setFormData({ ...formData, customerName: e.target.value })}
+                  placeholder="Enter customer name"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Customer Phone</Label>
+                <Input
+                  value={formData.customerPhone}
+                  onChange={(e) => setFormData({ ...formData, customerPhone: e.target.value })}
+                  placeholder="Enter phone number"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Total Amount</Label>
+              <Input
+                type="number"
+                step="0.01"
+                value={formData.total}
+                onChange={(e) => setFormData({ ...formData, total: e.target.value })}
+                placeholder="0.00"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditOpen(false)} className="text-gray-700 hover:text-gray-900">Cancel</Button>
+            <Button onClick={handleEdit} className="bg-black hover:bg-gray-900 text-white">
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
     </div>
   )
 }

@@ -9,23 +9,26 @@ import {
   LayoutDashboard, 
   ShoppingBag, 
   Phone, 
-  Store, 
+  Calendar,
+  UtensilsCrossed,
   LogOut,
   BarChart3
 } from "lucide-react";
-import { signOut } from "@/lib/auth";
+import { useAuthStore } from "@/lib/auth-store";
 
 const navigation = [
   { name: "Overview", href: "/dashboard", icon: LayoutDashboard },
   { name: "Orders", href: "/dashboard/orders", icon: ShoppingBag },
   { name: "Calls", href: "/dashboard/calls", icon: Phone },
-  { name: "Restaurants", href: "/dashboard/restaurants", icon: Store },
+  { name: "Reservations", href: "/dashboard/reservations", icon: Calendar },
+  { name: "Menu", href: "/dashboard/menu", icon: UtensilsCrossed },
 ];
 
 export default function DashboardNavRail() {
   const pathname = usePathname();
   const { isHovered, setIsHovered } = useSidebar();
   const [isTouchDevice, setIsTouchDevice] = useState(false);
+  const logout = useAuthStore((state) => state.logout);
 
   useEffect(() => {
     setIsTouchDevice("ontouchstart" in window || navigator.maxTouchPoints > 0);
@@ -131,8 +134,9 @@ export default function DashboardNavRail() {
         <div className="mt-6">
           <button
             type="button"
-            onClick={async () => {
-              await signOut({ redirectTo: "/login" });
+            onClick={() => {
+              logout();
+              window.location.href = "/login";
             }}
             className={`w-full flex items-center rounded-xl border border-red-500/50 bg-white/80 text-sm font-medium text-red-500 transition-all duration-300 hover:bg-red-500/10 hover:border-red-500 hover:shadow-lg hover:shadow-red-500/20 hover:scale-105 hover:-translate-y-0.5 active:scale-[0.98] active:translate-y-0 overflow-hidden ${
               isHovered ? "px-3 py-3" : "justify-center py-3"

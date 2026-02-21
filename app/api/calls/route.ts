@@ -1,113 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/prisma'
+import { sammaiClient } from '@/lib/sammai-client'
+import { adaptCallToDashboard } from '@/lib/sammai-adapter'
 
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
-    const restaurantId = searchParams.get('restaurantId')
     const outcome = searchParams.get('outcome')
-    const from = searchParams.get('from')
-    const to = searchParams.get('to')
 
-    const where: any = {}
-    
-    if (restaurantId && restaurantId !== 'all') {
-      where.restaurantId = restaurantId
-    }
+    // Extract auth token from request headers
+    const authHeader = request.headers.get('authorization')
+    const token = authHeader?.replace('Bearer ', '')
 
-    if (outcome && outcome !== 'all') {
-      where.outcome = outcome
-    }
-
-    if (from || to) {
-      where.startedAt = {}
-      if (from) where.startedAt.gte = new Date(from)
-      if (to) where.startedAt.lte = new Date(to)
-    }
-
-    const [calls, total] = await Promise.all([
-      prisma.call.findMany({
-        where,
-        include: {
-          restaurant: true,
-          orders: {
-            include: {
-              items: true,
-            },
-          },
-        },
-        orderBy: { startedAt: 'desc' },
-        skip: (page - 1) * limit,
-        take: limit,
+    const [response, tenant] = await Promise.all([
+      sammaiClient.listCalls({
+        page,
+        page_size: limit,
+        outcome: outcome && outcome !== 'all' ? outcome : undefined,
+        token,
       }),
-      prisma.call.count({ where }),
+      sammaiClient.getTenant(token),
     ])
+
+    const calls = response.items.map(call => adaptCallToDashboard(call, tenant.name))
 
     return NextResponse.json({
       calls,
-      total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
+      total: response.total,
+      page: response.page,
+      limit: response.page_size,
+      totalPages: response.pages,
     })
   } catch (error) {
     console.error('Calls error:', error)
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 500 }
-    )
-  }
-}
-
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json()
-    const { 
-      restaurantId, 
-      callerPhone, 
-      callerName, 
-      durationSeconds,
-      outcome,
-      transcriptText,
-      summaryText 
-    } = body
-
-    if (!restaurantId || !callerPhone || !outcome) {
-      return NextResponse.json(
-        { error: 'Missing required fields' },
-        { status: 400 }
-      )
-    }
-
-    const now = new Date()
-    const startedAt = new Date(now.getTime() - (durationSeconds || 0) * 1000)
-
-    const call = await prisma.call.create({
-      data: {
-        restaurantId,
-        startedAt,
-        endedAt: now,
-        durationSeconds: durationSeconds || 0,
-        callerPhone,
-        callerName: callerName || null,
-        outcome,
-        isRecorded: false,
-        recordingUrl: null,
-        transcriptText: transcriptText || '',
-        summaryText: summaryText || null,
+      { 
+        calls: [],
+        total: 0,
+        page: 1,
+        limit: 20,
+        totalPages: 1,
+        error: error instanceof Error ? error.message : 'Unknown error' 
       },
-      include: {
-        restaurant: true,
-      },
-    })
-
-    return NextResponse.json(call, { status: 201 })
-  } catch (error) {
-    console.error('Error creating call:', error)
-    return NextResponse.json(
-      { error: 'Failed to create call' },
       { status: 500 }
     )
   }

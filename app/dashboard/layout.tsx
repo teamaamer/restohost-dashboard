@@ -3,6 +3,7 @@
 import { SidebarProvider, useSidebar } from "@/components/dashboard-sidebar-context"
 import DashboardNavRail from "@/components/dashboard-navrail"
 import { MobileBottomNav } from "@/components/mobile-bottom-nav"
+import { ProtectedRoute } from "@/components/ProtectedRoute"
 import { motion } from "framer-motion"
 import { useState, useEffect } from "react"
 
@@ -42,17 +43,19 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   return (
-    <SidebarProvider>
-      <div className="h-screen overflow-hidden bg-white flex relative">
-        {/* Grid pattern background */}
-        <div className="absolute inset-0 [background-size:20px_20px] [background-image:linear-gradient(to_right,#e4e4e7_1px,transparent_1px),linear-gradient(to_bottom,#e4e4e7_1px,transparent_1px)]"></div>
-        {/* Radial gradient for faded look */}
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-white [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
-        
-        <DashboardNavRail />
-        <DashboardContent>{children}</DashboardContent>
-        <MobileBottomNav />
-      </div>
-    </SidebarProvider>
+    <ProtectedRoute>
+      <SidebarProvider>
+        <div className="h-screen overflow-hidden bg-white flex relative">
+          {/* Grid pattern background */}
+          <div className="absolute inset-0 [background-size:20px_20px] [background-image:linear-gradient(to_right,#e4e4e7_1px,transparent_1px),linear-gradient(to_bottom,#e4e4e7_1px,transparent_1px)]"></div>
+          {/* Radial gradient for faded look */}
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-white [mask-image:radial-gradient(ellipse_at_center,transparent_20%,black)]"></div>
+          
+          <DashboardNavRail />
+          <DashboardContent>{children}</DashboardContent>
+          <MobileBottomNav />
+        </div>
+      </SidebarProvider>
+    </ProtectedRoute>
   )
 }

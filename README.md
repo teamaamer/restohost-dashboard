@@ -1,33 +1,35 @@
 # Restaurant Analytics Dashboard
 
-A production-quality analytics dashboard for restaurants that ingests call transcripts from RestoHost.ai and generates detailed insights including sales, orders, calls, average ticket, and call minutes with detailed order/call views and audio playback.
+A modern analytics dashboard for restaurants powered by **Sammai AI**. View and manage calls, orders, reservations, and menu items with real-time data from the Sammai API.
 
 ## Features
 
-- 📊 **Overview Dashboard** - KPIs, charts, and trends for sales, orders, calls, and conversion rates
-- 📦 **Orders Management** - Detailed order views with items, payment methods, and linked calls
-- 📞 **Calls Tracking** - Call transcripts, audio playback, and outcome tracking
-- 🏪 **Restaurant Analytics** - Performance metrics per restaurant
-- 🔐 **Authentication** - Secure admin login with NextAuth
-- 🌓 **Dark Mode** - Full dark mode support
-- 📱 **Responsive Design** - Mobile-friendly with collapsible sidebar
+- 📊 **Overview Dashboard** - Real-time stats for calls, orders, and reservations from Sammai API
+- 📞 **Calls Management** - View call transcripts, recordings, and outcomes (read-only)
+- 📦 **Orders Management** - View and update orders with detailed item information
+- � **Reservations** - Manage restaurant reservations with customer details
+- �️ **Menu Viewer** - Browse menu items with categories, pricing, and dietary info
+- 🔐 **Authentication** - Secure login with Sammai API credentials
+- 📱 **Responsive Design** - Mobile-friendly with modern UI
 - 🎨 **Modern UI** - Built with shadcn/ui and Tailwind CSS
+- ⚡ **Real-time Data** - Direct integration with Sammai API
 
 ## Tech Stack
 
 - **Framework**: Next.js 16 (App Router)
-- **Database**: MySQL with Prisma ORM
+- **Backend**: Sammai API (Python FastAPI)
 - **UI**: TailwindCSS + shadcn/ui components
-- **Charts**: Recharts
-- **Authentication**: NextAuth v5
+- **State Management**: Zustand (auth)
+- **Authentication**: JWT tokens from Sammai API
 - **TypeScript**: Full type safety
+- **API Client**: Custom Sammai client with auth
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 18+ 
-- MySQL database
+- Node.js 18+
+- Sammai API running on `http://localhost:8000`
 - npm or yarn
 
 ### Installation
@@ -39,138 +41,112 @@ npm install
 ```
 
 2. **Set up environment variables**:
-```bash
-cp .env.example .env
-```
 
-Edit `.env` with your configuration:
+Create a `.env` file:
 ```env
-DATABASE_URL="mysql://user:password@localhost:3306/restaurant_analytics"
-NEXTAUTH_SECRET="your-secret-key-here"
-NEXTAUTH_URL="http://localhost:3000"
-ADMIN_EMAIL="admin@restaurant.com"
-ADMIN_PASSWORD="admin123"
+NEXT_PUBLIC_API_URL=http://localhost:8000
+SAMMAI_API_URL=http://localhost:8000
+SAMMAI_TENANT_ID=your-tenant-id-here
+NEXTAUTH_SECRET=your-secret-key
+NEXTAUTH_URL=http://localhost:3000
 ```
 
-3. **Set up the database**:
+3. **Start the Sammai API** (in separate terminal):
 ```bash
-npx prisma generate
-npx prisma db push
+cd /path/to/sammai-api
+source venv/bin/activate
+uvicorn app.main:app --reload
 ```
 
-4. **Seed sample data** (optional):
+4. **Seed demo data** (optional):
 ```bash
-npx tsx scripts/seed.ts
+cd /path/to/sammai-api
+source venv/bin/activate
+python -m app.db.seed_full
 ```
 
-5. **Run the development server**:
+5. **Run the dashboard**:
 ```bash
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) and login with:
-- Email: `admin@restaurant.com`
+Open [http://localhost:3000/login](http://localhost:3000/login) and login with:
+- Email: `admin@loman.ai`
 - Password: `admin123`
 
-## API Endpoints
+Or super admin:
+- Email: `super@loman.ai`
+- Password: `super123`
 
-### Ingestion Endpoint
+## API Integration
 
-**POST** `/api/ingest/restohost`
+The dashboard integrates with the Sammai API and provides the following endpoints:
 
-Ingests call transcripts and orders from RestoHost.ai:
+### Dashboard API Routes (Proxy to Sammai)
 
-```json
-{
-  "restaurant": {
-    "externalId": "resto_001",
-    "name": "Pizza Palace",
-    "brand": "Palace Group",
-    "phone": "+972599123456",
-    "timezone": "Asia/Hebron"
-  },
-  "call": {
-    "id": "call_001",
-    "startedAt": "2026-01-30T10:10:00Z",
-    "endedAt": "2026-01-30T10:14:40Z",
-    "callerPhone": "+972599111222",
-    "callerName": "Ahmad",
-    "recordingUrl": "https://example.com/recording.mp3",
-    "isRecorded": true,
-    "transcriptText": "Full call transcript...",
-    "summaryText": "Call summary...",
-    "outcome": "ORDER_PLACED"
-  },
-  "orders": [
-    {
-      "id": "order_001",
-      "orderType": "PICKUP",
-      "paymentMethod": "CASH",
-      "subtotal": 80.0,
-      "tax": 0,
-      "tip": 0,
-      "total": 80.0,
-      "status": "PLACED",
-      "customerName": "Ahmad",
-      "customerPhone": "+972599111222",
-      "items": [
-        {
-          "itemName": "Shawarma",
-          "quantity": 2,
-          "unitPrice": 25,
-          "modifiersJson": { "noOnions": true }
-        }
-      ]
-    }
-  ]
-}
-```
+- **GET** `/api/calls` - List calls with pagination
+- **GET** `/api/calls/stats` - Call statistics summary
+- **GET** `/api/orders` - List orders with pagination
+- **GET** `/api/orders/stats` - Order statistics and revenue
+- **GET** `/api/reservations` - List reservations with pagination
+- **GET** `/api/reservations/stats` - Reservation statistics
+- **GET** `/api/menu` - List menu items with category filtering
 
-### Other Endpoints
+### Sammai API Endpoints Used
 
-- **GET** `/api/metrics` - Dashboard metrics with filters
-- **GET** `/api/restaurants` - List all restaurants
-- **GET** `/api/restaurants/stats` - Restaurant performance stats
-- **GET** `/api/orders` - Paginated orders list
-- **GET** `/api/calls` - Paginated calls list
+- `POST /auth/login` - User authentication
+- `GET /tenants/{id}` - Get tenant details
+- `GET /tenants/{id}/calls` - List calls
+- `GET /tenants/{id}/calls/stats/summary` - Call stats
+- `GET /tenants/{id}/orders` - List orders
+- `GET /tenants/{id}/orders/stats/summary` - Order stats
+- `GET /tenants/{id}/reservations` - List reservations
+- `GET /tenants/{id}/reservations/stats/summary` - Reservation stats
+- `GET /tenants/{id}/menu_items` - List menu items
+- `PUT /tenants/{id}/orders/{order_id}` - Update order
+- `PUT /tenants/{id}/reservations/{res_id}` - Update reservation
 
-## Database Schema
-
-### Restaurants
-- id, name, brand, phone, timezone, externalId
+## Data Models (from Sammai API)
 
 ### Calls
-- id, restaurantId, startedAt, endedAt, durationSeconds
-- callerPhone, callerName, transcriptText, summaryText
-- outcome (ORDER_PLACED, INQUIRY, MISSED, CANCELED, OTHER)
-- recordingUrl, isRecorded
+- Read-only (created by phone system)
+- Includes transcripts, recordings, outcomes
+- Linked to orders and reservations
 
 ### Orders
-- id, callId, restaurantId, orderType (PICKUP, DELIVERY)
-- paymentMethod (CASH, CARD, ONLINE, OTHER, UNKNOWN)
-- subtotal, tax, tip, total
-- status (PLACED, CANCELED, FAILED, NEEDS_FOLLOWUP)
-- customerName, customerPhone
+- View and update (created by AI agent)
+- Customer info, items, pricing, payment status
+- Linked to originating call
 
-### OrderItems
-- id, orderId, itemName, quantity, unitPrice, modifiersJson
+### Reservations
+- View and update (created by AI agent)
+- Party size, date/time, customer details
+- Status tracking (pending, confirmed, seated, completed)
+
+### Menu Items
+- Read-only view
+- Categories, pricing, dietary info
+- Modifiers and availability status
+
+### Tenants
+- Multi-tenant support
+- Restaurant settings and configuration
 
 ## Project Structure
 
 ```
 restaurant-analytics/
 ├── app/
-│   ├── api/                    # API routes
-│   │   ├── auth/              # NextAuth endpoints
-│   │   ├── calls/             # Calls API
-│   │   ├── ingest/            # Ingestion endpoint
-│   │   ├── metrics/           # Metrics API
-│   │   ├── orders/            # Orders API
-│   │   └── restaurants/       # Restaurants API
+│   ├── api/                    # API routes (proxy to Sammai)
+│   │   ├── calls/             # Calls API + stats
+│   │   ├── orders/            # Orders API + stats
+│   │   ├── reservations/      # Reservations API + stats
+│   │   └── menu/              # Menu items API
 │   ├── dashboard/             # Dashboard pages
 │   │   ├── calls/             # Calls page
 │   │   ├── orders/            # Orders page
-│   │   ├── restaurants/       # Restaurants page
+│   │   ├── reservations/      # Reservations page
+│   │   ├── menu/              # Menu page
 │   │   ├── layout.tsx         # Dashboard layout
 │   │   ├── page.tsx           # Overview page
 │   │   └── overview-content.tsx
@@ -179,16 +155,17 @@ restaurant-analytics/
 │   └── globals.css            # Global styles
 ├── components/
 │   ├── ui/                    # shadcn/ui components
-│   ├── date-range-picker.tsx
-│   └── kpi-card.tsx
+│   ├── dashboard-navrail.tsx  # Navigation sidebar
+│   ├── kpi-card.tsx           # KPI display component
+│   └── ProtectedRoute.tsx     # Auth wrapper
 ├── lib/
-│   ├── auth.ts                # Auth configuration
-│   ├── prisma.ts              # Prisma client
+│   ├── sammai-client.ts       # Sammai API client
+│   ├── sammai-types.ts        # TypeScript types
+│   ├── sammai-adapter.ts      # Data adapters
+│   ├── auth-store.ts          # Zustand auth store
+│   ├── api-client.ts          # Auth API client
 │   └── utils.ts               # Utility functions
-├── prisma/
-│   └── schema.prisma          # Database schema
-└── scripts/
-    └── seed.ts                # Database seeding
+└── middleware.ts              # Route middleware
 ```
 
 ## Development
@@ -203,15 +180,40 @@ npm run build
 # Start production server
 npm start
 
-# Run Prisma Studio (database GUI)
-npx prisma studio
+# Type checking
+npm run type-check
 
-# Generate Prisma client
-npx prisma generate
-
-# Create migration
-npx prisma migrate dev --name migration_name
+# Linting
+npm run lint
 ```
+
+## Features Aligned with Sammai API
+
+✅ **Calls** - Read-only (created by phone system)
+✅ **Orders** - View and update (created by AI agent)
+✅ **Reservations** - View and update (created by AI agent)
+✅ **Menu** - Read-only (view items and categories)
+✅ **Authentication** - JWT tokens from Sammai API
+✅ **Multi-tenant** - Uses Sammai tenant system
+
+## Configuration
+
+### Environment Variables
+
+- `NEXT_PUBLIC_API_URL` - Sammai API URL (for client-side)
+- `SAMMAI_API_URL` - Sammai API URL (for server-side)
+- `SAMMAI_TENANT_ID` - Your tenant UUID from Sammai database
+- `NEXTAUTH_SECRET` - Secret for session encryption
+- `NEXTAUTH_URL` - Dashboard URL
+
+### Getting Tenant ID
+
+Your tenant ID can be found in the Sammai database:
+```sql
+SELECT id, name FROM tenants;
+```
+
+Or check the seed script output when running `seed_full.py`.
 
 ## License
 

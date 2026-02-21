@@ -2,12 +2,11 @@
 
 import { useEffect, useState } from "react"
 import { format } from "date-fns"
-import { Eye, Phone, Clock, Search, ShoppingCart, Plus, Edit, Trash2 } from "lucide-react"
+import { Eye, Phone, Clock, Search, ShoppingCart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useAuthStore } from "@/lib/auth-store"
 import {
   Table,
   TableBody,
@@ -46,51 +45,35 @@ interface Call {
 }
 
 export default function CallsPage() {
+  const accessToken = useAuthStore((state) => state.accessToken)
   const [calls, setCalls] = useState<Call[]>([])
   const [selectedCall, setSelectedCall] = useState<Call | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
-  const [isCreateOpen, setIsCreateOpen] = useState(false)
-  const [isEditOpen, setIsEditOpen] = useState(false)
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false)
-  const [restaurants, setRestaurants] = useState<any[]>([])
-  const [formData, setFormData] = useState<any>({
-    restaurantId: "",
-    callerPhone: "",
-    callerName: "",
-    durationSeconds: "0",
-    outcome: "OTHER",
-    transcriptText: "",
-    summaryText: "",
-    audioFile: null,
-  })
 
   useEffect(() => {
     fetchCalls()
-    fetchRestaurants()
   }, [page])
 
-  const fetchRestaurants = async () => {
-    try {
-      const res = await fetch("/api/restaurants")
-      const data = await res.json()
-      setRestaurants(data)
-    } catch (error) {
-      console.error("Failed to fetch restaurants:", error)
-    }
-  }
-
   const fetchCalls = async () => {
+    if (!accessToken) return
+    
     setLoading(true)
     try {
-      const res = await fetch(`/api/calls?page=${page}&limit=20`)
+      const res = await fetch(`/api/calls?page=${page}&limit=20`, {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`
+        }
+      })
       const data = await res.json()
-      setCalls(data.calls)
-      setTotalPages(data.totalPages)
+      setCalls(data.calls || [])
+      setTotalPages(data.totalPages || 1)
     } catch (error) {
       console.error("Failed to fetch calls:", error)
+      setCalls([])
+      setTotalPages(1)
     } finally {
       setLoading(false)
     }
@@ -113,87 +96,6 @@ export default function CallsPage() {
     return <Badge variant={variants[outcome] || "outline"}>{outcome.replace("_", " ")}</Badge>
   }
 
-  const handleCreate = async () => {
-    try {
-      const res = await fetch("/api/calls", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          durationSeconds: parseInt(formData.durationSeconds) || 0,
-        }),
-      })
-      if (res.ok) {
-        setIsCreateOpen(false)
-        setFormData({
-          restaurantId: "",
-          callerPhone: "",
-          callerName: "",
-          durationSeconds: "0",
-          outcome: "OTHER",
-          transcriptText: "",
-          summaryText: "",
-        })
-        fetchCalls()
-      }
-    } catch (error) {
-      console.error("Failed to create call:", error)
-    }
-  }
-
-  const handleEdit = async () => {
-    if (!selectedCall) return
-    try {
-      const res = await fetch(`/api/calls/${selectedCall.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
-      })
-      if (res.ok) {
-        setIsEditOpen(false)
-        setSelectedCall(null)
-        fetchCalls()
-      }
-    } catch (error) {
-      console.error("Failed to update call:", error)
-    }
-  }
-
-  const handleDelete = async () => {
-    if (!selectedCall) return
-    try {
-      const res = await fetch(`/api/calls/${selectedCall.id}`, {
-        method: "DELETE",
-      })
-      if (res.ok) {
-        setIsDeleteOpen(false)
-        setSelectedCall(null)
-        fetchCalls()
-      }
-    } catch (error) {
-      console.error("Failed to delete call:", error)
-    }
-  }
-
-  const openEditDialog = (call: Call) => {
-    setSelectedCall(call)
-    setFormData({
-      restaurantId: "",
-      callerPhone: call.callerPhone,
-      callerName: call.callerName || "",
-      durationSeconds: call.durationSeconds.toString(),
-      outcome: call.outcome,
-      transcriptText: call.transcriptText,
-      summaryText: call.summaryText || "",
-    })
-    setIsEditOpen(true)
-  }
-
-  const openDeleteDialog = (call: Call) => {
-    setSelectedCall(call)
-    setIsDeleteOpen(true)
-  }
-
   const filteredTranscript = selectedCall?.transcriptText
     .split("\n")
     .filter((line) =>
@@ -212,13 +114,6 @@ export default function CallsPage() {
               View call transcripts and recordings
             </p>
           </div>
-          <Button
-            onClick={() => setIsCreateOpen(true)}
-            className="bg-black hover:bg-gray-900 text-white"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Add Call
-          </Button>
         </div>
       </div>
 
@@ -255,41 +150,17 @@ export default function CallsPage() {
                           {format(new Date(call.startedAt), "MMM dd, yyyy • HH:mm")}
                         </p>
                       </div>
-                      <div className="flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="flex-shrink-0 hover:bg-indigo-100"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setSelectedCall(call)
-                          }}
-                        >
-                          <Eye className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            openEditDialog(call)
-                          }}
-                          className="hover:bg-indigo-100"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            openDeleteDialog(call)
-                          }}
-                          className="hover:bg-red-100 hover:text-red-600"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="flex-shrink-0 hover:bg-indigo-100"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setSelectedCall(call)
+                        }}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
                     </div>
 
                     {/* Caller Info */}
@@ -479,168 +350,6 @@ export default function CallsPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Create Call Dialog */}
-      <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-        <DialogContent className="bg-white max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-black">
-              Add New Call
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Restaurant</Label>
-                <Select value={formData.restaurantId} onValueChange={(value) => setFormData({ ...formData, restaurantId: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select restaurant" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {restaurants.map((r) => (
-                      <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Outcome</Label>
-                <Select value={formData.outcome} onValueChange={(value) => setFormData({ ...formData, outcome: value })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ORDER_PLACED">Order Placed</SelectItem>
-                    <SelectItem value="INQUIRY">Inquiry</SelectItem>
-                    <SelectItem value="MISSED">Missed</SelectItem>
-                    <SelectItem value="CANCELED">Canceled</SelectItem>
-                    <SelectItem value="OTHER">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Caller Phone</Label>
-                <Input
-                  value={formData.callerPhone}
-                  onChange={(e) => setFormData({ ...formData, callerPhone: e.target.value })}
-                  placeholder="Enter phone number"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Caller Name (Optional)</Label>
-                <Input
-                  value={formData.callerName}
-                  onChange={(e) => setFormData({ ...formData, callerName: e.target.value })}
-                  placeholder="Enter caller name"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Duration (seconds)</Label>
-              <Input
-                type="number"
-                value={formData.durationSeconds}
-                onChange={(e) => setFormData({ ...formData, durationSeconds: e.target.value })}
-                placeholder="0"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label>Audio Recording (Optional)</Label>
-              <Input
-                type="file"
-                accept="audio/*"
-                onChange={(e) => {
-                  const file = e.target.files?.[0]
-                  if (file) {
-                    setFormData({ ...formData, audioFile: file })
-                  }
-                }}
-                className="cursor-pointer"
-              />
-              <p className="text-xs text-gray-500">Upload an audio file for this call recording</p>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsCreateOpen(false)} className="text-gray-700 hover:text-gray-900">Cancel</Button>
-            <Button onClick={handleCreate} className="bg-black hover:bg-gray-900 text-white">
-              Create Call
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit Call Dialog */}
-      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-        <DialogContent className="bg-white max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-black">
-              Edit Call
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Caller Phone</Label>
-                <Input
-                  value={formData.callerPhone}
-                  onChange={(e) => setFormData({ ...formData, callerPhone: e.target.value })}
-                  placeholder="Enter phone number"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Caller Name</Label>
-                <Input
-                  value={formData.callerName}
-                  onChange={(e) => setFormData({ ...formData, callerName: e.target.value })}
-                  placeholder="Enter caller name"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Outcome</Label>
-              <Select value={formData.outcome} onValueChange={(value) => setFormData({ ...formData, outcome: value })}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ORDER_PLACED">Order Placed</SelectItem>
-                  <SelectItem value="INQUIRY">Inquiry</SelectItem>
-                  <SelectItem value="MISSED">Missed</SelectItem>
-                  <SelectItem value="CANCELED">Canceled</SelectItem>
-                  <SelectItem value="OTHER">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditOpen(false)} className="text-gray-700 hover:text-gray-900">Cancel</Button>
-            <Button onClick={handleEdit} className="bg-black hover:bg-gray-900 text-white">
-              Save Changes
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <DialogContent className="bg-white">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-red-600">Delete Call</DialogTitle>
-          </DialogHeader>
-          <div className="py-4">
-            <p className="text-gray-700">
-              Are you sure you want to delete this call? This action cannot be undone.
-            </p>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDeleteOpen(false)} className="text-gray-700 hover:text-gray-900">Cancel</Button>
-            <Button onClick={handleDelete} className="bg-red-600 hover:bg-red-700 text-white">
-              Delete Call
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }
